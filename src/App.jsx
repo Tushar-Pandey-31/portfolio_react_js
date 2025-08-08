@@ -3,10 +3,14 @@ import './App.css'
 
 const GITHUB_USERNAME = 'Tushar-Pandey-31'
 const CHESS_USERNAME = 'tuxsharx'
+const PIN_KEYWORDS = ['finnacle', 'finacle', 'microservice', 'microservices', 'eda', 'event']
+const PINNED_REPO_NAMES = ['finnacle', 'finacle']
+const MANUAL_PINNED_FULLNAMES = ['Tushar-Pandey-31/finnacle', 'Tushar-Pandey-31/finacle']
 
 function useGithubProfile(username) {
   const [data, setData] = useState(null)
   const [repos, setRepos] = useState([])
+  const [extraRepos, setExtraRepos] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -23,9 +27,25 @@ function useGithubProfile(username) {
         if (!reposRes.ok) throw new Error('GitHub repos fetch failed')
         const profile = await profileRes.json()
         const reposJson = await reposRes.json()
+
+        // Fetch any manual pinned repos not already included
+        const have = new Set(reposJson.map(r => (r.full_name || '').toLowerCase()))
+        const missing = MANUAL_PINNED_FULLNAMES.filter(f => !have.has(f.toLowerCase()))
+        let fetchedExtras = []
+        if (missing.length) {
+          const extraRes = await Promise.all(
+            missing.map(full => fetch(`https://api.github.com/repos/${full}`))
+          )
+          const ok = await Promise.all(
+            extraRes.map(async r => (r.ok ? r.json() : null))
+          )
+          fetchedExtras = ok.filter(Boolean)
+        }
+
         if (!isMounted) return
         setData(profile)
         setRepos(reposJson)
+        setExtraRepos(fetchedExtras)
       } catch (e) {
         if (!isMounted) return
         setError(String(e.message || e))
@@ -37,14 +57,37 @@ function useGithubProfile(username) {
     return () => { isMounted = false }
   }, [username])
 
-  const topRepos = useMemo(() => {
-    return (repos || [])
-      .filter(r => !r.fork)
-      .sort((a, b) => (b.stargazers_count || 0) - (a.stargazers_count || 0))
-      .slice(0, 6)
-  }, [repos])
+  const { topRepos, curatedProjects } = useMemo(() => {
+    const all = [...(repos || []), ...(extraRepos || [])].filter(r => !r.fork)
+    const byStars = [...all].sort((a, b) => (b.stargazers_count || 0) - (a.stargazers_count || 0))
 
-  return { data, repos: topRepos, loading, error }
+    const pinnedByName = all.filter(r => PINNED_REPO_NAMES.some(n => (r.name || '').toLowerCase().includes(n)))
+
+    const pinnedByKeyword = all.filter(r => {
+      const name = (r.name || '').toLowerCase()
+      const desc = (r.description || '').toLowerCase()
+      return PIN_KEYWORDS.some(k => name.includes(k) || desc.includes(k))
+    })
+
+    const ordered = []
+    const seen = new Set()
+
+    // Manual full-name pins first in their provided order
+    for (const fullname of MANUAL_PINNED_FULLNAMES) {
+      const item = all.find(r => (r.full_name || '').toLowerCase() === fullname.toLowerCase())
+      if (item && !seen.has(item.id)) { seen.add(item.id); ordered.push(item) }
+    }
+
+    for (const r of pinnedByName) { if (!seen.has(r.id)) { seen.add(r.id); ordered.push(r) } }
+    for (const r of pinnedByKeyword) { if (!seen.has(r.id)) { seen.add(r.id); ordered.push(r) } }
+    for (const r of byStars) { if (!seen.has(r.id)) { seen.add(r.id); ordered.push(r) } }
+
+    const curated = ordered.slice(0, 8)
+    const top = byStars.slice(0, 6)
+    return { topRepos: top, curatedProjects: curated }
+  }, [repos, extraRepos])
+
+  return { data, repos: topRepos, projects: curatedProjects, loading, error }
 }
 
 function useChessRatings(username) {
@@ -86,7 +129,7 @@ function StatChip({ label, value }) {
 }
 
 function App() {
-  const { data: gh, repos, loading: ghLoading } = useGithubProfile(GITHUB_USERNAME)
+  const { data: gh, projects, loading: ghLoading } = useGithubProfile(GITHUB_USERNAME)
   const { data: chess, loading: chessLoading } = useChessRatings(CHESS_USERNAME)
 
   const chessRatings = useMemo(() => {
@@ -163,11 +206,11 @@ function App() {
       <main>
         <div className="container sections">
           <section className="card">
-            <div className="section-title"><span className="kbd">GitHub</span> Recent Work</div>
+            <div className="section-title"><span className="kbd">GitHub</span> Featured Projects</div>
             {ghLoading && <p className="subtitle">Loading repositories…</p>}
             {!ghLoading && (
               <div className="card-grid">
-                {(repos || []).map(repo => (
+                {(projects || []).map(repo => (
                   <a key={repo.id} className="card card-4" href={repo.html_url} target="_blank" rel="noreferrer">
                     <h4 style={{margin: 0}}>{repo.name}</h4>
                     <p>{repo.description || 'No description provided.'}</p>
