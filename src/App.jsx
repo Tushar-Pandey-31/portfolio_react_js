@@ -309,28 +309,6 @@ function App() {
           </section>
 
           <section className="card">
-            <div className="section-title"><span className="kbd">GitHub</span> Featured Projects</div>
-            {ghLoading && <p className="subtitle">Loading repositories…</p>}
-            {!ghLoading && (
-              <div className="card-grid">
-                {(projects || []).map(repo => (
-                  <a key={repo.id} className="card card-4" href={repo.html_url} target="_blank" rel="noreferrer">
-                    <h4 style={{margin: 0}}>{repo.name}</h4>
-                    <p>{repo.description || 'No description provided.'}</p>
-                    <div className="cta-row" style={{marginTop: 12}}>
-                      <span className="badge">★ {repo.stargazers_count}</span>
-                      <span className="badge">{repo.language || '—'}</span>
-                      {repo.topics?.slice(0,2).map(t => (
-                        <span key={t} className="badge">{t}</span>
-                      ))}
-                    </div>
-                  </a>
-                ))}
-              </div>
-            )}
-          </section>
-
-          <section className="card">
             <div className="section-title"><span className="kbd">Education</span></div>
             <div className="card-grid">
               <div className="card card-6">
