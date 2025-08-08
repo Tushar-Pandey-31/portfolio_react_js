@@ -1,12 +1,21 @@
 import { useEffect, useMemo, useState } from 'react'
 import './App.css'
 
+const FULL_NAME = 'Tushar Ranjan Pandey'
+const PHONE = '+91-8447819778'
+const EMAIL = 'pandeytushar359@gmail.com'
+const LINKEDIN_URL = 'https://www.linkedin.com/in/tushar-ranjan-pandey'
+
 const GITHUB_USERNAME = 'Tushar-Pandey-31'
 const CHESS_USERNAME = 'tuxsharx'
+const PIN_KEYWORDS = ['finnacle', 'finacle', 'microservice', 'microservices', 'eda', 'event']
+const PINNED_REPO_NAMES = ['finnacle', 'finacle']
+const MANUAL_PINNED_FULLNAMES = ['Tushar-Pandey-31/finnacle', 'Tushar-Pandey-31/finacle']
 
 function useGithubProfile(username) {
   const [data, setData] = useState(null)
   const [repos, setRepos] = useState([])
+  const [extraRepos, setExtraRepos] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -23,9 +32,25 @@ function useGithubProfile(username) {
         if (!reposRes.ok) throw new Error('GitHub repos fetch failed')
         const profile = await profileRes.json()
         const reposJson = await reposRes.json()
+
+        // Fetch any manual pinned repos not already included
+        const have = new Set(reposJson.map(r => (r.full_name || '').toLowerCase()))
+        const missing = MANUAL_PINNED_FULLNAMES.filter(f => !have.has(f.toLowerCase()))
+        let fetchedExtras = []
+        if (missing.length) {
+          const extraRes = await Promise.all(
+            missing.map(full => fetch(`https://api.github.com/repos/${full}`))
+          )
+          const ok = await Promise.all(
+            extraRes.map(async r => (r.ok ? r.json() : null))
+          )
+          fetchedExtras = ok.filter(Boolean)
+        }
+
         if (!isMounted) return
         setData(profile)
         setRepos(reposJson)
+        setExtraRepos(fetchedExtras)
       } catch (e) {
         if (!isMounted) return
         setError(String(e.message || e))
@@ -37,14 +62,37 @@ function useGithubProfile(username) {
     return () => { isMounted = false }
   }, [username])
 
-  const topRepos = useMemo(() => {
-    return (repos || [])
-      .filter(r => !r.fork)
-      .sort((a, b) => (b.stargazers_count || 0) - (a.stargazers_count || 0))
-      .slice(0, 6)
-  }, [repos])
+  const { topRepos, curatedProjects } = useMemo(() => {
+    const all = [...(repos || []), ...(extraRepos || [])].filter(r => !r.fork)
+    const byStars = [...all].sort((a, b) => (b.stargazers_count || 0) - (a.stargazers_count || 0))
 
-  return { data, repos: topRepos, loading, error }
+    const pinnedByName = all.filter(r => PINNED_REPO_NAMES.some(n => (r.name || '').toLowerCase().includes(n)))
+
+    const pinnedByKeyword = all.filter(r => {
+      const name = (r.name || '').toLowerCase()
+      const desc = (r.description || '').toLowerCase()
+      return PIN_KEYWORDS.some(k => name.includes(k) || desc.includes(k))
+    })
+
+    const ordered = []
+    const seen = new Set()
+
+    // Manual full-name pins first in their provided order
+    for (const fullname of MANUAL_PINNED_FULLNAMES) {
+      const item = all.find(r => (r.full_name || '').toLowerCase() === fullname.toLowerCase())
+      if (item && !seen.has(item.id)) { seen.add(item.id); ordered.push(item) }
+    }
+
+    for (const r of pinnedByName) { if (!seen.has(r.id)) { seen.add(r.id); ordered.push(r) } }
+    for (const r of pinnedByKeyword) { if (!seen.has(r.id)) { seen.add(r.id); ordered.push(r) } }
+    for (const r of byStars) { if (!seen.has(r.id)) { seen.add(r.id); ordered.push(r) } }
+
+    const curated = ordered.slice(0, 8)
+    const top = byStars.slice(0, 6)
+    return { topRepos: top, curatedProjects: curated }
+  }, [repos, extraRepos])
+
+  return { data, repos: topRepos, projects: curatedProjects, loading, error }
 }
 
 function useChessRatings(username) {
@@ -86,7 +134,7 @@ function StatChip({ label, value }) {
 }
 
 function App() {
-  const { data: gh, repos, loading: ghLoading } = useGithubProfile(GITHUB_USERNAME)
+  const { data: gh, projects, loading: ghLoading } = useGithubProfile(GITHUB_USERNAME)
   const { data: chess, loading: chessLoading } = useChessRatings(CHESS_USERNAME)
 
   const chessRatings = useMemo(() => {
@@ -96,6 +144,13 @@ function App() {
     const bullet = chess.chess_bullet?.last?.rating
     return { blitz, rapid, bullet }
   }, [chess])
+
+  const skills = {
+    languages: ['Java', 'JavaScript', 'HTML/CSS', 'SQL'],
+    backend: ['Spring Boot', 'MySQL', 'MongoDB', 'Redis', 'Elasticsearch'],
+    tools: ['Git', 'Kafka', 'Docker'],
+    concepts: ['Microservices', 'REST API', 'JWT Authentication', 'Caching', 'Event-Driven Architecture']
+  }
 
   const specialties = [
     { title: 'Microservices', desc: 'Independent, deployable services with clear contracts and resiliency patterns.' },
@@ -107,8 +162,9 @@ function App() {
     <div className="app">
       <nav>
         <div className="container nav-inner">
-          <div className="brand">Tushar Pandey</div>
+          <div className="brand">{FULL_NAME}</div>
           <div className="cta-row">
+            <a className="btn btn-ghost" href={LINKEDIN_URL} target="_blank" rel="noreferrer">LinkedIn</a>
             <a className="btn btn-ghost" href={`https://github.com/${GITHUB_USERNAME}`} target="_blank" rel="noreferrer">GitHub</a>
             <a className="btn btn-ghost" href={`https://www.chess.com/member/${CHESS_USERNAME}`} target="_blank" rel="noreferrer">Chess.com</a>
           </div>
@@ -118,12 +174,12 @@ function App() {
       <header className="hero">
         <div className="container hero-grid">
           <div>
-            <div className="badge">Software Developer • Microservices • EDA</div>
+            <div className="badge">Backend Developer</div>
             <h1 className="title">Building resilient, event‑driven systems.</h1>
-            <p className="subtitle">I design and implement scalable microservices with event-driven patterns, focusing on reliability, performance, and developer experience.</p>
+            <p className="subtitle">Microservices • Spring Boot • Kafka • Redis • Elasticsearch</p>
             <div className="cta-row">
-              <a className="btn btn-primary" href={`https://github.com/${GITHUB_USERNAME}`} target="_blank" rel="noreferrer">View GitHub</a>
-              <a className="btn btn-ghost" href={`mailto:tusharpandey.work@gmail.com`}>Contact</a>
+              <a className="btn btn-primary" href={`mailto:${EMAIL}`}>Contact</a>
+              <a className="btn btn-ghost" href={`tel:${PHONE.replace(/[^+\d]/g, '')}`}>Call {PHONE}</a>
             </div>
           </div>
           <div>
@@ -163,11 +219,85 @@ function App() {
       <main>
         <div className="container sections">
           <section className="card">
-            <div className="section-title"><span className="kbd">GitHub</span> Recent Work</div>
+            <div className="section-title"><span className="kbd">Contact</span> Info</div>
+            <div className="cta-row">
+              <a className="btn btn-ghost" href={`mailto:${EMAIL}`}>📧 {EMAIL}</a>
+              <a className="btn btn-ghost" href={`tel:${PHONE.replace(/[^+\d]/g, '')}`}>📞 {PHONE}</a>
+              <a className="btn btn-ghost" href={LINKEDIN_URL} target="_blank" rel="noreferrer">🔗 LinkedIn</a>
+              <a className="btn btn-ghost" href={`https://github.com/${GITHUB_USERNAME}`} target="_blank" rel="noreferrer">💻 GitHub</a>
+            </div>
+          </section>
+
+          <section className="card">
+            <div className="section-title"><span className="kbd">Skills</span></div>
+            <div className="card-grid">
+              <div className="card card-6">
+                <h4 style={{marginTop: 0}}>Programming Languages</h4>
+                <div className="cta-row">{skills.languages.map(s => <span key={s} className="badge">{s}</span>)}</div>
+              </div>
+              <div className="card card-6">
+                <h4 style={{marginTop: 0}}>Backend & Databases</h4>
+                <div className="cta-row">{skills.backend.map(s => <span key={s} className="badge">{s}</span>)}</div>
+              </div>
+              <div className="card card-6">
+                <h4 style={{marginTop: 0}}>Tools & Technology</h4>
+                <div className="cta-row">{skills.tools.map(s => <span key={s} className="badge">{s}</span>)}</div>
+              </div>
+              <div className="card card-6">
+                <h4 style={{marginTop: 0}}>Concepts</h4>
+                <div className="cta-row">{skills.concepts.map(s => <span key={s} className="badge">{s}</span>)}</div>
+              </div>
+            </div>
+          </section>
+
+          <section className="card">
+            <div className="section-title"><span className="kbd">Experience</span></div>
+            <h4 style={{margin: '0 0 6px'}}>Junior Software Developer — TravelXP</h4>
+            <p className="subtitle">Jun 2023 – Aug 2023</p>
+            <ul>
+              <li>Developed responsive frontend pages for the Android mobile app using React Native, improving UI consistency and user engagement.</li>
+              <li>Collaborated with backend teams to integrate RESTful APIs for seamless data flow between frontend and microservices.</li>
+            </ul>
+          </section>
+
+          <section className="card">
+            <div className="section-title"><span className="kbd">Projects</span></div>
+            <div className="card-grid">
+              <div className="card card-12">
+                <h4 style={{marginTop: 0}}>Microservices-based E-commerce Platform</h4>
+                <ul>
+                  <li>Designed a scalable platform using Spring Boot and Spring Cloud, integrating core modules: product catalog, order management, and Razorpay payments.</li>
+                  <li>Reduced API response time by 90% (500ms → 50ms) using Redis caching for static data.</li>
+                  <li>Implemented powerful sorting and filtering using Elasticsearch for efficient product discovery.</li>
+                  <li>Built an Event-Driven Email Service for large-scale email delivery across services.</li>
+                </ul>
+                <div className="cta-row">
+                  {['Spring Boot', 'Spring Cloud', 'MySQL', 'Redis', 'Razorpay', 'JUnit', 'Kafka'].map(t => (
+                    <span key={t} className="badge">{t}</span>
+                  ))}
+                </div>
+              </div>
+              <div className="card card-12">
+                <h4 style={{marginTop: 0}}>Chat Application</h4>
+                <ul>
+                  <li>Developed a full-stack app using the MERN stack with JWT authentication, reducing security vulnerabilities.</li>
+                  <li>Integrated Socket.IO for real-time messaging, reducing chat latency by 20%.</li>
+                </ul>
+                <div className="cta-row">
+                  {['React', 'Node.js', 'MongoDB', 'WebSockets', 'Socket.IO', 'JWT'].map(t => (
+                    <span key={t} className="badge">{t}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="card">
+            <div className="section-title"><span className="kbd">GitHub</span> Featured Projects</div>
             {ghLoading && <p className="subtitle">Loading repositories…</p>}
             {!ghLoading && (
               <div className="card-grid">
-                {(repos || []).map(repo => (
+                {(projects || []).map(repo => (
                   <a key={repo.id} className="card card-4" href={repo.html_url} target="_blank" rel="noreferrer">
                     <h4 style={{margin: 0}}>{repo.name}</h4>
                     <p>{repo.description || 'No description provided.'}</p>
@@ -185,15 +315,34 @@ function App() {
           </section>
 
           <section className="card">
-            <div className="section-title"><span className="kbd">About</span> Me</div>
-            <p className="subtitle">I am a software developer focused on microservices and event-driven architecture. I enjoy working with streaming, messaging, and cloud-native tooling to ship robust systems.</p>
+            <div className="section-title"><span className="kbd">Education</span></div>
+            <div className="card-grid">
+              <div className="card card-6">
+                <h4 style={{marginTop: 0}}>Scaler Academy — Software Development (2025)</h4>
+                <p className="subtitle">Modules: DSA, SQL/DBMS, LLD, HLD, Capstone Project (Backend)</p>
+              </div>
+              <div className="card card-6">
+                <h4 style={{marginTop: 0}}>MDU Rohtak — BCA in Computer Science (2023)</h4>
+              </div>
+            </div>
+          </section>
+
+          <section className="card">
+            <div className="section-title"><span className="kbd">Certifications</span></div>
+            <ul>
+              <li>Data Structures & Algorithms (Scaler) | 10/2023 – 04/2024</li>
+              <li>Databases & SQL (Scaler) | 05/2024 – 06/2024</li>
+              <li>Low-Level Design (Scaler) | 06/2024 – 11/2024</li>
+              <li>Backend/Spring Boot (Scaler) | 01/2025 – 03/2025</li>
+              <li>Full Stack Web Development (AttainU) | 05/2022 – 05/2023</li>
+            </ul>
           </section>
         </div>
       </main>
 
       <footer className="footer">
         <div className="container">
-          © {new Date().getFullYear()} Tushar Pandey · Built with React + Vite
+          © {new Date().getFullYear()} {FULL_NAME} · Built with React + Vite
         </div>
       </footer>
     </div>
