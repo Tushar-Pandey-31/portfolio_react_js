@@ -4,7 +4,7 @@ import './App.css'
 const FULL_NAME = 'Tushar Ranjan Pandey'
 const PHONE = '+91-8447819778'
 const EMAIL = 'pandeytushar359@gmail.com'
-const LINKEDIN_URL = 'https://www.linkedin.com/in/tushar-ranjan-pandey'
+const LINKEDIN_URL = 'https://www.linkedin.com/in/tushar-pandey-49aa5a215/'
 
 const GITHUB_USERNAME = 'Tushar-Pandey-31'
 const CHESS_USERNAME = 'tuxsharx'
