@@ -245,7 +245,7 @@ function App() {
         <div className="main-content-wrapper">
         <div className="container sections">
           <section className="card text-center">
-            <div className="section-title"><span className="kbd">Contact</span> Info</div>
+            <div className="section-title"><span className="kbd">Contact</span></div>
             <div className="cta-row center">
               <a className="btn btn-ghost" href={`mailto:${EMAIL}`}>📧 {EMAIL}</a>
               <a className="btn btn-ghost" href={`tel:${PHONE.replace(/[^+\d]/g, '')}`}>📞 {PHONE}</a>

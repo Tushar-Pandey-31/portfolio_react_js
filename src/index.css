@@ -1,12 +1,12 @@
 :root {
-  --bg: #0b0f16;
-  --text: #e8f0ff;
-  --muted: #9fb0cc;
-  --card: #0f1624;
-  --accent-1: #7b61ff; /* purple */
-  --accent-2: #00d4ff; /* cyan */
-  --accent-3: #ff7ac6; /* pink */
-  --accent-4: #4df3a8; /* mint */
+  --bg: #141815;
+  --text: #e0e6df;
+  --muted: #949993;
+  --card: #1c211e;
+  --accent-1: #6b9071;
+  --accent-2: #b5e4c0;
+  --accent-3: #b5e4c0; /* You can reuse accent-2 if you don't need a third green */
+  --accent-4: #6b9071; /* You can reuse accent-1 */
 }
 
 * {
@@ -25,9 +25,9 @@ html, body, #root {
 body {
   margin: 0;
   color: var(--text);
-  background: radial-gradient(1200px 800px at 10% -10%, rgba(123, 97, 255, 0.18), transparent 60%),
-              radial-gradient(1200px 800px at 110% 10%, rgba(0, 212, 255, 0.18), transparent 60%),
-              linear-gradient(180deg, #0b0f16 0%, #0b0f16 100%);
+  background: radial-gradient(1200px 800px at 50% -10%, rgba(132, 169, 140, 0.15), transparent 60%) var(--bg);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
   font-family: 'Poppins', Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
