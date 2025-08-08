@@ -127,6 +127,11 @@ nav {
   margin: 24px 0 60px;
 }
 
+/* Utilities for centering resume sections */
+.text-center { text-align: center; }
+.center { justify-content: center; }
+.prose ul { margin: 8px 0; padding-left: 18px; display: inline-block; text-align: left; }
+
 .card {
   background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
   border: 1px solid rgba(255,255,255,0.08);

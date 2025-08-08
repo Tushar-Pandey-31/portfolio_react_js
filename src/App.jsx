@@ -11,6 +11,7 @@ const CHESS_USERNAME = 'tuxsharx'
 const PIN_KEYWORDS = ['finnacle', 'finacle', 'microservice', 'microservices', 'eda', 'event']
 const PINNED_REPO_NAMES = ['finnacle', 'finacle']
 const MANUAL_PINNED_FULLNAMES = ['Tushar-Pandey-31/finnacle', 'Tushar-Pandey-31/finacle']
+const FINNACLE_LIVE_URL = 'https://finnacle-beta.vercel.app/'
 
 function useGithubProfile(username) {
   const [data, setData] = useState(null)
@@ -66,14 +67,20 @@ function useGithubProfile(username) {
     const all = [...(repos || []), ...(extraRepos || [])].filter(r => !r.fork)
     const byStars = [...all].sort((a, b) => (b.stargazers_count || 0) - (a.stargazers_count || 0))
 
+    const isFinnacle = (r) => ((r.name || '').toLowerCase().includes('finnacle') || (r.name || '').toLowerCase().includes('finacle'))
     const pinnedByName = all.filter(r => PINNED_REPO_NAMES.some(n => (r.name || '').toLowerCase().includes(n)))
 
-    const pinnedByKeyword = all.filter(r => {
+    const microKeyword = (r) => {
       const name = (r.name || '').toLowerCase()
       const desc = (r.description || '').toLowerCase()
-      return PIN_KEYWORDS.some(k => name.includes(k) || desc.includes(k))
-    })
+      const topics = (r.topics || []).join(' ').toLowerCase()
+      const text = name + ' ' + desc + ' ' + topics
+      return ['microservice', 'microservices', 'spring', 'cloud', 'eureka', 'kafka', 'event'].some(k => text.includes(k))
+    }
 
+    const microRepos = all.filter(microKeyword)
+
+    // Compose only Finnacle (+manual) and microservice repos
     const ordered = []
     const seen = new Set()
 
@@ -83,11 +90,27 @@ function useGithubProfile(username) {
       if (item && !seen.has(item.id)) { seen.add(item.id); ordered.push(item) }
     }
 
-    for (const r of pinnedByName) { if (!seen.has(r.id)) { seen.add(r.id); ordered.push(r) } }
-    for (const r of pinnedByKeyword) { if (!seen.has(r.id)) { seen.add(r.id); ordered.push(r) } }
-    for (const r of byStars) { if (!seen.has(r.id)) { seen.add(r.id); ordered.push(r) } }
+    // Finnacle by name if found
+    for (const r of all) { if (isFinnacle(r) && !seen.has(r.id)) { seen.add(r.id); ordered.push(r) } }
 
-    const curated = ordered.slice(0, 8)
+    // Microservice repos next, highest stars first
+    for (const r of [...microRepos].sort((a,b)=> (b.stargazers_count||0)-(a.stargazers_count||0))) {
+      if (!seen.has(r.id)) { seen.add(r.id); ordered.push(r) }
+    }
+
+    // If no Finnacle repo found, add a manual entry to represent live app
+    if (!ordered.some(r => isFinnacle(r))) {
+      ordered.unshift({
+        id: 'finnacle-live',
+        name: 'Finnacle',
+        description: 'Paper Trading App',
+        html_url: FINNACLE_LIVE_URL,
+        stargazers_count: 0,
+        language: '—',
+      })
+    }
+
+    const curated = ordered
     const top = byStars.slice(0, 6)
     return { topRepos: top, curatedProjects: curated }
   }, [repos, extraRepos])
@@ -220,9 +243,9 @@ function App() {
 
       <main>
         <div className="container sections">
-          <section className="card">
+          <section className="card text-center">
             <div className="section-title"><span className="kbd">Contact</span> Info</div>
-            <div className="cta-row">
+            <div className="cta-row center">
               <a className="btn btn-ghost" href={`mailto:${EMAIL}`}>📧 {EMAIL}</a>
               <a className="btn btn-ghost" href={`tel:${PHONE.replace(/[^+\d]/g, '')}`}>📞 {PHONE}</a>
               <a className="btn btn-ghost" href={LINKEDIN_URL} target="_blank" rel="noreferrer">🔗 LinkedIn</a>
@@ -230,29 +253,29 @@ function App() {
             </div>
           </section>
 
-          <section className="card">
+          <section className="card text-center">
             <div className="section-title"><span className="kbd">Skills</span></div>
             <div className="card-grid">
               <div className="card card-6">
                 <h4 style={{marginTop: 0}}>Programming Languages</h4>
-                <div className="cta-row">{skills.languages.map(s => <span key={s} className="badge">{s}</span>)}</div>
+                <div className="cta-row center">{skills.languages.map(s => <span key={s} className="badge">{s}</span>)}</div>
               </div>
               <div className="card card-6">
                 <h4 style={{marginTop: 0}}>Backend & Databases</h4>
-                <div className="cta-row">{skills.backend.map(s => <span key={s} className="badge">{s}</span>)}</div>
+                <div className="cta-row center">{skills.backend.map(s => <span key={s} className="badge">{s}</span>)}</div>
               </div>
               <div className="card card-6">
                 <h4 style={{marginTop: 0}}>Tools & Technology</h4>
-                <div className="cta-row">{skills.tools.map(s => <span key={s} className="badge">{s}</span>)}</div>
+                <div className="cta-row center">{skills.tools.map(s => <span key={s} className="badge">{s}</span>)}</div>
               </div>
               <div className="card card-6">
                 <h4 style={{marginTop: 0}}>Concepts</h4>
-                <div className="cta-row">{skills.concepts.map(s => <span key={s} className="badge">{s}</span>)}</div>
+                <div className="cta-row center">{skills.concepts.map(s => <span key={s} className="badge">{s}</span>)}</div>
               </div>
             </div>
           </section>
 
-          <section className="card">
+          <section className="card text-center prose">
             <div className="section-title"><span className="kbd">Experience</span></div>
             <h4 style={{margin: '0 0 6px'}}>Junior Software Developer — TravelXP</h4>
             <p className="subtitle">Jun 2023 – Aug 2023</p>
@@ -265,32 +288,23 @@ function App() {
           <section className="card">
             <div className="section-title"><span className="kbd">Projects</span></div>
             <div className="card-grid">
-              <div className="card card-12">
-                <h4 style={{marginTop: 0}}>Microservices-based E-commerce Platform</h4>
-                <ul>
-                  <li>Designed a scalable platform using Spring Boot and Spring Cloud, integrating core modules: product catalog, order management, and Razorpay payments.</li>
-                  <li>Reduced API response time by 90% (500ms → 50ms) using Redis caching for static data.</li>
-                  <li>Implemented powerful sorting and filtering using Elasticsearch for efficient product discovery.</li>
-                  <li>Built an Event-Driven Email Service for large-scale email delivery across services.</li>
-                </ul>
-                <div className="cta-row">
-                  {['Spring Boot', 'Spring Cloud', 'MySQL', 'Redis', 'Razorpay', 'JUnit', 'Kafka'].map(t => (
-                    <span key={t} className="badge">{t}</span>
-                  ))}
+              {(projects || []).map(repo => (
+                <div key={repo.id} className="card card-12">
+                  <a href={repo.html_url} target="_blank" rel="noreferrer">
+                    <h4 style={{marginTop: 0}}>{repo.name}</h4>
+                  </a>
+                  <p>{repo.description || 'No description provided.'}</p>
+                  <div className="cta-row" style={{marginTop: 12}}>
+                    <span className="badge">★ {repo.stargazers_count}</span>
+                    <span className="badge">{repo.language || '—'}</span>
+                  </div>
+                  {((repo.name || '').toLowerCase().includes('finnacle') || repo.id === 'finnacle-live') && (
+                    <p style={{marginTop: 10}}>
+                      <a className="btn btn-primary" href={FINNACLE_LIVE_URL} target="_blank" rel="noreferrer">Go to the live</a>
+                    </p>
+                  )}
                 </div>
-              </div>
-              <div className="card card-12">
-                <h4 style={{marginTop: 0}}>Chat Application</h4>
-                <ul>
-                  <li>Developed a full-stack app using the MERN stack with JWT authentication, reducing security vulnerabilities.</li>
-                  <li>Integrated Socket.IO for real-time messaging, reducing chat latency by 20%.</li>
-                </ul>
-                <div className="cta-row">
-                  {['React', 'Node.js', 'MongoDB', 'WebSockets', 'Socket.IO', 'JWT'].map(t => (
-                    <span key={t} className="badge">{t}</span>
-                  ))}
-                </div>
-              </div>
+              ))}
             </div>
           </section>
 
