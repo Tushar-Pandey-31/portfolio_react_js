@@ -13,6 +13,11 @@
   box-sizing: border-box;
 }
 
+.main-content-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
 html, body, #root {
   height: 100%;
 }
@@ -74,9 +79,10 @@ nav {
 
 .hero-grid {
   display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
+  grid-template-columns: 1fr;
   gap: 32px;
   align-items: center;
+  place-items: center;
 }
 
 .title {
@@ -119,6 +125,10 @@ nav {
   background: rgba(255,255,255,0.04);
 }
 
+.btn-ghost-chess {
+  background: rgba(37, 123, 5, 0.04);
+}
+
 .btn:hover { transform: translateY(-1px); }
 
 .sections {
@@ -154,8 +164,11 @@ nav {
 .card-12 { grid-column: span 12; }
 
 @media (max-width: 900px) {
-  .hero-grid { grid-template-columns: 1fr; }
-  .card-4, .card-6, .card-8 { grid-column: span 12; }
+  .hero-grid { 
+    grid-template-columns: 1fr;
+    place-items: center;
+  }
+  .card-4, .card-6, .card-8 { grid-column: span 12; }
 }
 
 .footer {

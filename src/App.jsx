@@ -189,7 +189,7 @@ function App() {
           <div className="cta-row">
             <a className="btn btn-ghost" href={LINKEDIN_URL} target="_blank" rel="noreferrer">LinkedIn</a>
             <a className="btn btn-ghost" href={`https://github.com/${GITHUB_USERNAME}`} target="_blank" rel="noreferrer">GitHub</a>
-            <a className="btn btn-ghost" href={`https://www.chess.com/member/${CHESS_USERNAME}`} target="_blank" rel="noreferrer">Chess.com</a>
+            <a className="btn btn-ghost-chess" href={`https://www.chess.com/member/${CHESS_USERNAME}`} target="_blank" rel="noreferrer">Chess.com</a>
           </div>
         </div>
       </nav>
@@ -242,6 +242,7 @@ function App() {
       </header>
 
       <main>
+        <div className="main-content-wrapper">
         <div className="container sections">
           <section className="card text-center">
             <div className="section-title"><span className="kbd">Contact</span> Info</div>
@@ -331,6 +332,7 @@ function App() {
               <li>Full Stack Web Development (AttainU) | 05/2022 – 05/2023</li>
             </ul>
           </section>
+        </div>
         </div>
       </main>
 
