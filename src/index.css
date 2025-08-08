@@ -80,11 +80,12 @@ nav {
 }
 
 .title {
-  font-size: clamp(2.2rem, 4vw, 3.2rem);
-  line-height: 1.05;
+  font-size: clamp(1.4rem, 2.5vw, 2rem);
+  line-height: 1.2;
   font-weight: 700;
   margin: 8px 0 12px;
 }
+
 
 .subtitle {
   color: var(--muted);

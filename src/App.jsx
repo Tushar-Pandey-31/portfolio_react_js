@@ -175,17 +175,19 @@ function App() {
         <div className="container hero-grid">
           <div>
             <div className="badge">Backend Developer</div>
-            <h1 className="title">Building resilient, event‑driven systems.</h1>
+            <h1 className="title">I’m a backend developer, chess enthusiast, and finance geek with a love for derivatives. I design scalable systems in Java + Spring Boot where every millisecond counts. Outside of code, I’m always learning — from market strategies to new languages. I speak Hindi, English, and I’m a beginner in Spanish.
+
+</h1>
             <p className="subtitle">Microservices • Spring Boot • Kafka • Redis • Elasticsearch</p>
-            <div className="cta-row">
+            {/* <div className="cta-row">
               <a className="btn btn-primary" href={`mailto:${EMAIL}`}>Contact</a>
               <a className="btn btn-ghost" href={`tel:${PHONE.replace(/[^+\d]/g, '')}`}>Call {PHONE}</a>
-            </div>
+            </div> */}
           </div>
           <div>
             <div className="sections">
               <div className="card">
-                <h3>Chess.com Ratings</h3>
+                <h3>Chess.com</h3>
                 {chessLoading && <p className="subtitle">Loading chess ratings…</p>}
                 {!chessLoading && !chessRatings && <p className="subtitle">Unable to load ratings.</p>}
                 {!chessLoading && chessRatings && (
