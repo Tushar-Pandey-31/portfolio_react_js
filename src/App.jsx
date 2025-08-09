@@ -17,45 +17,6 @@ const FINNACLE_LIVE_URL = 'https://finnacle-beta.vercel.app/'
 const EXCLUDE_REPO_NAMES = ['finnacle-backend', 'finacle-backend', 'finnacle_backend', 'finacle_backend']
 const EXCLUDE_FULLNAMES = EXCLUDE_REPO_NAMES.map(n => `${GITHUB_USERNAME}/${n}`)
 
-function useDuolingo(username) {
-  const [data, setData] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-
-  useEffect(() => {
-    let isMounted = true
-    async function run() {
-      try {
-        setLoading(true)
-        const res = await fetch(`https://www.duolingo.com/2017-06-30/users?username=${encodeURIComponent(username)}`)
-        if (!res.ok) throw new Error('Duolingo fetch failed')
-        const json = await res.json()
-        if (!isMounted) return
-        setData(json)
-      } catch (e) {
-        if (!isMounted) return
-        setError(String(e.message || e))
-      } finally {
-        if (isMounted) setLoading(false)
-      }
-    }
-    run()
-    return () => { isMounted = false }
-  }, [username])
-
-  const parsed = useMemo(() => {
-    if (!data || !data.users || !Array.isArray(data.users) || data.users.length === 0) return null
-    const user = data.users[0]
-    const streak = user.site_streak || user.streak_extended || user.streak || 0
-    const courses = (user.courses || []).filter(c => c.learning)
-    const topCourse = courses[0] || user.courses?.[0]
-    const language = (topCourse && (topCourse.title || topCourse.fromLanguageName || topCourse.learningLanguageName)) || 'Language'
-    return { streak, language }
-  }, [data])
-
-  return { data: parsed, loading, error }
-}
-
 function useGithubProfile(username) {
   const [data, setData] = useState(null)
   const [repos, setRepos] = useState([])
@@ -212,7 +173,6 @@ function StatChip({ label, value }) {
 function App() {
   const { data: gh, projects, loading: ghLoading } = useGithubProfile(GITHUB_USERNAME)
   const { data: chess, loading: chessLoading } = useChessRatings(CHESS_USERNAME)
-  const { data: duo, loading: duoLoading } = useDuolingo('tuxsharx')
 
   const chessRatings = useMemo(() => {
     if (!chess) return null
@@ -243,7 +203,7 @@ function App() {
           <div className="cta-row">
             <a className="btn btn-ghost" href={LINKEDIN_URL} target="_blank" rel="noreferrer">LinkedIn</a>
             <a className="btn btn-ghost" href={`https://github.com/${GITHUB_USERNAME}`} target="_blank" rel="noreferrer">GitHub</a>
-            <a className="btn btn-ghost-chess" href={`https://www.chess.com/member/${CHESS_USERNAME}`} target="_blank" rel="noreferrer">Chess.com</a>
+            <a className="btn btn-ghost" href={`https://www.chess.com/member/${CHESS_USERNAME}`} target="_blank" rel="noreferrer">Chess.com</a>
           </div>
         </div>
       </nav>
@@ -278,26 +238,6 @@ function App() {
               </div>
 
               <div className="card">
-                <h3>Duolingo</h3>
-                {duoLoading && <p className="subtitle">Loading language + streak…</p>}
-                {!duoLoading && (!duo ? (
-                  <p className="subtitle">Unable to load Duolingo data.</p>
-                ) : (
-                  <div className="stat-row">
-                    <div className="badge">Language: <strong>{duo.language}</strong></div>
-                    <div className="duo-streak">
-                      <div className="duo-flame">🔥</div>
-                      <div className="duo-streak-number">{duo.streak}</div>
-                      <span className="duo-subtext">day streak</span>
-                    </div>
-                  </div>
-                ))}
-                <p style={{marginTop: 10}}>
-                  <a className="btn btn-ghost" href={`https://www.duolingo.com/profile/tuxsharx`} target="_blank" rel="noreferrer">See profile</a>
-                </p>
-              </div>
-
-              <div className="card">
                 <h3>Focus</h3>
                 <div className="card-grid">
                   {specialties.map(s => (
@@ -316,6 +256,13 @@ function App() {
       <main>
         <div className="main-content-wrapper">
         <div className="container sections">
+          <section className="card text-center">
+            <div className="section-title"><span className="kbd">About</span> Me</div>
+            <p className="subtitle" style={{maxWidth: 900, margin: '0 auto'}}>
+              I’m a backend developer, chess enthusiast, and finance geek with a love for derivatives. I design scalable systems in Java + Spring Boot where every millisecond counts. Outside of code, I’m always learning — from market strategies to new languages. I speak Hindi, English, and I’m a beginner in Spanish.
+            </p>
+          </section>
+
           <section className="card text-center">
             <div className="section-title"><span className="kbd">Contact</span></div>
             <div className="cta-row center">
