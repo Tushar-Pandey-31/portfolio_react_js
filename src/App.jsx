@@ -218,6 +218,13 @@ function App() {
               <a className="btn btn-primary" href={`mailto:${EMAIL}`}>Contact</a>
               <a className="btn btn-ghost" href={`tel:${PHONE.replace(/[^+\d]/g, '')}`}>Call {PHONE}</a>
             </div>
+            <section className="card text-center">
+              <div className="section-title"><span className="kbd">About</span> Me</div>
+              <p className="subtitle" style={{maxWidth: 900, margin: '0 auto'}}>
+                I’m a backend developer, chess enthusiast, and finance geek with a love for derivatives. I design scalable systems in Java + Spring Boot where every millisecond counts. Outside of code, I’m always learning — from market strategies to new languages. I speak Hindi, English, and I’m a beginner in Spanish.
+              </p>
+          </section>
+
           </div>
           <div>
             <div className="sections">
@@ -256,13 +263,7 @@ function App() {
       <main>
         <div className="main-content-wrapper">
         <div className="container sections">
-          <section className="card text-center">
-            <div className="section-title"><span className="kbd">About</span> Me</div>
-            <p className="subtitle" style={{maxWidth: 900, margin: '0 auto'}}>
-              I’m a backend developer, chess enthusiast, and finance geek with a love for derivatives. I design scalable systems in Java + Spring Boot where every millisecond counts. Outside of code, I’m always learning — from market strategies to new languages. I speak Hindi, English, and I’m a beginner in Spanish.
-            </p>
-          </section>
-
+          
           <section className="card text-center">
             <div className="section-title"><span className="kbd">Contact</span></div>
             <div className="cta-row center">
