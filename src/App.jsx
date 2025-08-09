@@ -108,7 +108,7 @@ function useGithubProfile(username) {
     for (const r of all) { if (isFinnacle(r) && !seen.has(r.id)) { seen.add(r.id); ordered.push(r) } }
 
     // Microservice repos next, highest stars first
-    for (const r of [...microRepos].sort((a,b)=> (b.stargazers_count||0)-(a.stargazers_count||0))) {
+    for (const r of [...microRepos].sort((a, b) => (b.stargazers_count || 0) - (a.stargazers_count || 0))) {
       if (!seen.has(r.id)) { seen.add(r.id); ordered.push(r) }
     }
 
@@ -164,7 +164,7 @@ function useChessRatings(username) {
 function StatChip({ label, value }) {
   return (
     <div className="badge">
-      <span style={{opacity: 0.8}}>{label}</span>
+      <span style={{ opacity: 0.8 }}>{label}</span>
       <strong>{value}</strong>
     </div>
   )
@@ -218,16 +218,29 @@ function App() {
               <a className="btn btn-primary" href={`mailto:${EMAIL}`}>Contact</a>
               <a className="btn btn-ghost" href={`tel:${PHONE.replace(/[^+\d]/g, '')}`}>Call {PHONE}</a>
             </div>
-            <section className="card text-center">
-              <div className="section-title"><span className="kbd">About</span> Me</div>
-              <p className="subtitle" style={{maxWidth: 900, margin: '0 auto'}}>
-                I’m a backend developer, chess enthusiast, and finance geek with a love for derivatives. I design scalable systems in Java + Spring Boot where every millisecond counts. Outside of code, I’m always learning — from market strategies to new languages. I speak Hindi, English, and I’m a beginner in Spanish.
-              </p>
-          </section>
-
           </div>
           <div>
             <div className="sections">
+              {/* About Me Section */}
+              <div className="card text-center">
+                <div className="section-title"><span className="kbd">About</span> Me</div>
+                <p className="subtitle" style={{ maxWidth: 900, margin: '0 auto' }}>
+                  I’m a backend developer, chess enthusiast, and finance geek with a love for derivatives. I design scalable systems in Java + Spring Boot where every millisecond counts. Outside of code, I’m always learning — from market strategies to new languages. I speak Hindi, English, and I’m a beginner in Spanish.
+                </p>
+              </div>
+
+              {/* Contact Section */}
+              <div className="card text-center">
+                <div className="section-title"><span className="kbd">Contact</span></div>
+                <div className="cta-row center">
+                  <a className="btn btn-ghost" href={`mailto:${EMAIL}`}>📧 {EMAIL}</a>
+                  <a className="btn btn-ghost" href={`tel:${PHONE.replace(/[^+\d]/g, '')}`}>📞 {PHONE}</a>
+                  <a className="btn btn-ghost" href={LINKEDIN_URL} target="_blank" rel="noreferrer">🔗 LinkedIn</a>
+                  <a className="btn btn-ghost" href={`https://github.com/${GITHUB_USERNAME}`} target="_blank" rel="noreferrer">💻 GitHub</a>
+                </div>
+              </div>
+
+              {/* Chess Ratings Section */}
               <div className="card">
                 <h3>Chess.com Ratings</h3>
                 {chessLoading && <p className="subtitle">Loading chess ratings…</p>}
@@ -239,7 +252,7 @@ function App() {
                     {chessRatings.bullet && <StatChip label="Bullet" value={chessRatings.bullet} />}
                   </div>
                 )}
-                <p style={{marginTop: 10}}>
+                <p style={{ marginTop: 10 }}>
                   <a className="btn btn-ghost" href={`https://www.chess.com/member/${CHESS_USERNAME}`} target="_blank" rel="noreferrer">See profile</a>
                 </p>
               </div>
@@ -249,7 +262,7 @@ function App() {
                 <div className="card-grid">
                   {specialties.map(s => (
                     <div key={s.title} className="card card-4">
-                      <h4 style={{margin: 0}}>{s.title}</h4>
+                      <h4 style={{ margin: 0 }}>{s.title}</h4>
                       <p>{s.desc}</p>
                     </div>
                   ))}
@@ -262,97 +275,89 @@ function App() {
 
       <main>
         <div className="main-content-wrapper">
-        <div className="container sections">
-          
-          <section className="card text-center">
-            <div className="section-title"><span className="kbd">Contact</span></div>
-            <div className="cta-row center">
-              <a className="btn btn-ghost" href={`mailto:${EMAIL}`}>📧 {EMAIL}</a>
-              <a className="btn btn-ghost" href={`tel:${PHONE.replace(/[^+\d]/g, '')}`}>📞 {PHONE}</a>
-              <a className="btn btn-ghost" href={LINKEDIN_URL} target="_blank" rel="noreferrer">🔗 LinkedIn</a>
-              <a className="btn btn-ghost" href={`https://github.com/${GITHUB_USERNAME}`} target="_blank" rel="noreferrer">💻 GitHub</a>
-            </div>
-          </section>
+          <div className="container sections">
+            
+            {/* The contact and about me sections have been moved up to the header */}
 
-          <section className="card text-center">
-            <div className="section-title"><span className="kbd">Skills</span></div>
-            <div className="card-grid">
-              <div className="card card-6">
-                <h4 style={{marginTop: 0}}>Programming Languages</h4>
-                <div className="cta-row center">{skills.languages.map(s => <span key={s} className="badge">{s}</span>)}</div>
-              </div>
-              <div className="card card-6">
-                <h4 style={{marginTop: 0}}>Backend & Databases</h4>
-                <div className="cta-row center">{skills.backend.map(s => <span key={s} className="badge">{s}</span>)}</div>
-              </div>
-              <div className="card card-6">
-                <h4 style={{marginTop: 0}}>Tools & Technology</h4>
-                <div className="cta-row center">{skills.tools.map(s => <span key={s} className="badge">{s}</span>)}</div>
-              </div>
-              <div className="card card-6">
-                <h4 style={{marginTop: 0}}>Concepts</h4>
-                <div className="cta-row center">{skills.concepts.map(s => <span key={s} className="badge">{s}</span>)}</div>
-              </div>
-            </div>
-          </section>
-
-          <section className="card text-center prose">
-            <div className="section-title"><span className="kbd">Experience</span></div>
-            <h4 style={{margin: '0 0 6px'}}>Junior Software Developer — TravelXP</h4>
-            <p className="subtitle">Jun 2023 – Aug 2023</p>
-            <ul>
-              <li>Developed responsive frontend pages for the Android mobile app using React Native, improving UI consistency and user engagement.</li>
-              <li>Collaborated with backend teams to integrate RESTful APIs for seamless data flow between frontend and microservices.</li>
-            </ul>
-          </section>
-
-          <section className="card">
-            <div className="section-title"><span className="kbd">Projects</span></div>
-            <div className="card-grid">
-              {(projects || []).map(repo => (
-                <div key={repo.id} className="card card-12">
-                  <a href={repo.html_url} target="_blank" rel="noreferrer">
-                    <h4 style={{marginTop: 0}}>{repo.name}</h4>
-                  </a>
-                  <p>{repo.description || 'No description provided.'}</p>
-                  <div className="cta-row" style={{marginTop: 12}}>
-                    <span className="badge">★ {repo.stargazers_count}</span>
-                    <span className="badge">{repo.language || '—'}</span>
-                  </div>
-                  {((repo.name || '').toLowerCase().includes('finnacle') || repo.id === 'finnacle-live') && (
-                    <p style={{marginTop: 10}}>
-                      <a className="btn btn-primary" href={FINNACLE_LIVE_URL} target="_blank" rel="noreferrer">Go to the live</a>
-                    </p>
-                  )}
+            <section className="card text-center">
+              <div className="section-title"><span className="kbd">Skills</span></div>
+              <div className="card-grid">
+                <div className="card card-6">
+                  <h4 style={{ marginTop: 0 }}>Programming Languages</h4>
+                  <div className="cta-row center">{skills.languages.map(s => <span key={s} className="badge">{s}</span>)}</div>
                 </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="card">
-            <div className="section-title"><span className="kbd">Education</span></div>
-            <div className="card-grid">
-              <div className="card card-6">
-                <h4 style={{marginTop: 0}}>Scaler Academy — Software Development (2025)</h4>
-                <p className="subtitle">Modules: DSA, SQL/DBMS, LLD, HLD, Capstone Project (Backend)</p>
+                <div className="card card-6">
+                  <h4 style={{ marginTop: 0 }}>Backend & Databases</h4>
+                  <div className="cta-row center">{skills.backend.map(s => <span key={s} className="badge">{s}</span>)}</div>
+                </div>
+                <div className="card card-6">
+                  <h4 style={{ marginTop: 0 }}>Tools & Technology</h4>
+                  <div className="cta-row center">{skills.tools.map(s => <span key={s} className="badge">{s}</span>)}</div>
+                </div>
+                <div className="card card-6">
+                  <h4 style={{ marginTop: 0 }}>Concepts</h4>
+                  <div className="cta-row center">{skills.concepts.map(s => <span key={s} className="badge">{s}</span>)}</div>
+                </div>
               </div>
-              <div className="card card-6">
-                <h4 style={{marginTop: 0}}>MDU Rohtak — BCA in Computer Science (2023)</h4>
-              </div>
-            </div>
-          </section>
+            </section>
 
-          <section className="card">
-            <div className="section-title"><span className="kbd">Certifications</span></div>
-            <ul>
-              <li>Data Structures & Algorithms (Scaler) | 10/2023 – 04/2024</li>
-              <li>Databases & SQL (Scaler) | 05/2024 – 06/2024</li>
-              <li>Low-Level Design (Scaler) | 06/2024 – 11/2024</li>
-              <li>Backend/Spring Boot (Scaler) | 01/2025 – 03/2025</li>
-              <li>Full Stack Web Development (AttainU) | 05/2022 – 05/2023</li>
-            </ul>
-          </section>
-        </div>
+            <section className="card text-center prose">
+              <div className="section-title"><span className="kbd">Experience</span></div>
+              <h4 style={{ margin: '0 0 6px' }}>Junior Software Developer — TravelXP</h4>
+              <p className="subtitle">Jun 2023 – Aug 2023</p>
+              <ul>
+                <li>Developed responsive frontend pages for the Android mobile app using React Native, improving UI consistency and user engagement.</li>
+                <li>Collaborated with backend teams to integrate RESTful APIs for seamless data flow between frontend and microservices.</li>
+              </ul>
+            </section>
+
+            <section className="card">
+              <div className="section-title"><span className="kbd">Projects</span></div>
+              <div className="card-grid">
+                {(projects || []).map(repo => (
+                  <div key={repo.id} className="card card-12">
+                    <a href={repo.html_url} target="_blank" rel="noreferrer">
+                      <h4 style={{ marginTop: 0 }}>{repo.name}</h4>
+                    </a>
+                    <p>{repo.description || 'No description provided.'}</p>
+                    <div className="cta-row" style={{ marginTop: 12 }}>
+                      <span className="badge">★ {repo.stargazers_count}</span>
+                      <span className="badge">{repo.language || '—'}</span>
+                    </div>
+                    {((repo.name || '').toLowerCase().includes('finnacle') || repo.id === 'finnacle-live') && (
+                      <p style={{ marginTop: 10 }}>
+                        <a className="btn btn-primary" href={FINNACLE_LIVE_URL} target="_blank" rel="noreferrer">Go to the live</a>
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section className="card">
+              <div className="section-title"><span className="kbd">Education</span></div>
+              <div className="card-grid">
+                <div className="card card-6">
+                  <h4 style={{ marginTop: 0 }}>Scaler Academy — Software Development (2025)</h4>
+                  <p className="subtitle">Modules: DSA, SQL/DBMS, LLD, HLD, Capstone Project (Backend)</p>
+                </div>
+                <div className="card card-6">
+                  <h4 style={{ marginTop: 0 }}>MDU Rohtak — BCA in Computer Science (2023)</h4>
+                </div>
+              </div>
+            </section>
+
+            <section className="card">
+              <div className="section-title"><span className="kbd">Certifications</span></div>
+              <ul>
+                <li>Data Structures & Algorithms (Scaler) | 10/2023 – 04/2024</li>
+                <li>Databases & SQL (Scaler) | 05/2024 – 06/2024</li>
+                <li>Low-Level Design (Scaler) | 06/2024 – 11/2024</li>
+                <li>Backend/Spring Boot (Scaler) | 01/2025 – 03/2025</li>
+                <li>Full Stack Web Development (AttainU) | 05/2022 – 05/2023</li>
+              </ul>
+            </section>
+          </div>
         </div>
       </main>
 
