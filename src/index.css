@@ -196,11 +196,21 @@ nav {
 .card-12 { grid-column: span 12; }
 
 @media (max-width: 900px) {
-  .hero-grid { 
+  .hero-grid { 
     grid-template-columns: 1fr;
     place-items: center;
   }
-  .card-4, .card-6, .card-8 { grid-column: span 12; }
+
+  /* FIX: Change the parent container's layout to stack cards vertically */
+  .card-grid {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .card-4, .card-6, .card-8 { 
+    /* This rule is now less critical but keeps consistent with the original intent. */
+    grid-column: span 12; 
+  }
 }
 
 .footer {
