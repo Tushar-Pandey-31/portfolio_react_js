@@ -142,6 +142,38 @@ nav {
 .center { justify-content: center; }
 .prose ul { margin: 8px 0; padding-left: 18px; display: inline-block; text-align: left; }
 
+/* Duolingo streak styles */
+.duo-streak {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: linear-gradient(135deg, #ff9800, #ff5722);
+  box-shadow: 0 8px 20px rgba(255, 87, 34, 0.25);
+}
+.duo-flame {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at 30% 30%, #fff3e0, #ffb300);
+  color: #ff5722;
+  font-size: 16px;
+}
+.duo-streak-number {
+  font-weight: 800;
+  font-size: 1.1rem;
+}
+.duo-subtext {
+  opacity: 0.9;
+  font-size: 0.9rem;
+}
+
+.stat-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
 .card {
   background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
   border: 1px solid rgba(255,255,255,0.08);
