@@ -4,7 +4,7 @@ import './App.css'
 const FULL_NAME = 'Tushar Ranjan Pandey'
 const PHONE = '+91-8447819778'
 const EMAIL = 'pandeytushar359@gmail.com'
-const LINKEDIN_URL = 'https://www.linkedin.com/in/tushar-pandey-49aa5a215/'
+const LINKEDIN_URL = 'https://www.linkedin.com/in/tushar-ranjan-pandey'
 
 const GITHUB_USERNAME = 'Tushar-Pandey-31'
 const CHESS_USERNAME = 'tuxsharx'
@@ -12,6 +12,10 @@ const PIN_KEYWORDS = ['finnacle', 'finacle', 'microservice', 'microservices', 'e
 const PINNED_REPO_NAMES = ['finnacle', 'finacle']
 const MANUAL_PINNED_FULLNAMES = ['Tushar-Pandey-31/finnacle', 'Tushar-Pandey-31/finacle']
 const FINNACLE_LIVE_URL = 'https://finnacle-beta.vercel.app/'
+
+// Exclude the Finnacle backend repo variants
+const EXCLUDE_REPO_NAMES = ['finnacle-backend', 'finacle-backend', 'finnacle_backend', 'finacle_backend']
+const EXCLUDE_FULLNAMES = EXCLUDE_REPO_NAMES.map(n => `${GITHUB_USERNAME}/${n}`)
 
 function useGithubProfile(username) {
   const [data, setData] = useState(null)
@@ -64,7 +68,17 @@ function useGithubProfile(username) {
   }, [username])
 
   const { topRepos, curatedProjects } = useMemo(() => {
-    const all = [...(repos || []), ...(extraRepos || [])].filter(r => !r.fork)
+    const isExcluded = (r) => {
+      const name = (r.name || '').toLowerCase()
+      const full = (r.full_name || '').toLowerCase()
+      if (EXCLUDE_REPO_NAMES.includes(name)) return true
+      if (EXCLUDE_FULLNAMES.includes(full)) return true
+      if (name.includes('finnacle') && (name.includes('backend') || name.includes('back-end') || name.includes('back_end'))) return true
+      return false
+    }
+
+    const allRaw = [...(repos || []), ...(extraRepos || [])]
+    const all = allRaw.filter(r => !r.fork && !isExcluded(r))
     const byStars = [...all].sort((a, b) => (b.stargazers_count || 0) - (a.stargazers_count || 0))
 
     const isFinnacle = (r) => ((r.name || '').toLowerCase().includes('finnacle') || (r.name || '').toLowerCase().includes('finacle'))
@@ -198,19 +212,17 @@ function App() {
         <div className="container hero-grid">
           <div>
             <div className="badge">Backend Developer</div>
-            <h1 className="title">I’m a backend developer, chess enthusiast, and finance geek with a love for derivatives. I design scalable systems in Java + Spring Boot where every millisecond counts. Outside of code, I’m always learning — from market strategies to new languages. I speak Hindi, English, and I’m a beginner in Spanish.
-
-</h1>
+            <h1 className="title">Building resilient, event‑driven systems.</h1>
             <p className="subtitle">Microservices • Spring Boot • Kafka • Redis • Elasticsearch</p>
-            {/* <div className="cta-row">
+            <div className="cta-row">
               <a className="btn btn-primary" href={`mailto:${EMAIL}`}>Contact</a>
               <a className="btn btn-ghost" href={`tel:${PHONE.replace(/[^+\d]/g, '')}`}>Call {PHONE}</a>
-            </div> */}
+            </div>
           </div>
           <div>
             <div className="sections">
               <div className="card">
-                <h3>Chess.com</h3>
+                <h3>Chess.com Ratings</h3>
                 {chessLoading && <p className="subtitle">Loading chess ratings…</p>}
                 {!chessLoading && !chessRatings && <p className="subtitle">Unable to load ratings.</p>}
                 {!chessLoading && chessRatings && (
