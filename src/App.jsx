@@ -1,369 +1,637 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useRef } from 'react'
 import './App.css'
 
+/* ── Config ── */
 const FULL_NAME = 'Tushar Ranjan Pandey'
 const PHONE = '+91-8447819778'
 const EMAIL = 'pandeytushar359@gmail.com'
 const LINKEDIN_URL = 'https://www.linkedin.com/in/tushar-ranjan-pandey'
-
 const GITHUB_USERNAME = 'Tushar-Pandey-31'
+const GITHUB_SEC_USERNAME = 'tuxsharxsec'
 const CHESS_USERNAME = 'tuxsharx'
-const PIN_KEYWORDS = ['finnacle', 'finacle', 'microservice', 'microservices', 'eda', 'event']
-const PINNED_REPO_NAMES = ['finnacle', 'finacle']
-const MANUAL_PINNED_FULLNAMES = ['Tushar-Pandey-31/finnacle', 'Tushar-Pandey-31/finacle']
+const X_HANDLE = '@tuxsharx'
+const CRITIKAL_URL = 'https://critikalai.com'
 const FINNACLE_LIVE_URL = 'https://finnacle-beta.vercel.app/'
 
-// Exclude the Finnacle backend repo variants
-const EXCLUDE_REPO_NAMES = ['finnacle-backend', 'finacle-backend', 'finnacle_backend', 'finacle_backend']
-const EXCLUDE_FULLNAMES = EXCLUDE_REPO_NAMES.map(n => `${GITHUB_USERNAME}/${n}`)
-
-function useGithubProfile(username) {
-  const [data, setData] = useState(null)
-  const [repos, setRepos] = useState([])
-  const [extraRepos, setExtraRepos] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-
-  useEffect(() => {
-    let isMounted = true
-    async function run() {
-      try {
-        setLoading(true)
-        const [profileRes, reposRes] = await Promise.all([
-          fetch(`https://api.github.com/users/${username}`),
-          fetch(`https://api.github.com/users/${username}/repos?per_page=100&sort=updated`)
-        ])
-        if (!profileRes.ok) throw new Error('GitHub profile fetch failed')
-        if (!reposRes.ok) throw new Error('GitHub repos fetch failed')
-        const profile = await profileRes.json()
-        const reposJson = await reposRes.json()
-
-        // Fetch any manual pinned repos not already included
-        const have = new Set(reposJson.map(r => (r.full_name || '').toLowerCase()))
-        const missing = MANUAL_PINNED_FULLNAMES.filter(f => !have.has(f.toLowerCase()))
-        let fetchedExtras = []
-        if (missing.length) {
-          const extraRes = await Promise.all(
-            missing.map(full => fetch(`https://api.github.com/repos/${full}`))
-          )
-          const ok = await Promise.all(
-            extraRes.map(async r => (r.ok ? r.json() : null))
-          )
-          fetchedExtras = ok.filter(Boolean)
-        }
-
-        if (!isMounted) return
-        setData(profile)
-        setRepos(reposJson)
-        setExtraRepos(fetchedExtras)
-      } catch (e) {
-        if (!isMounted) return
-        setError(String(e.message || e))
-      } finally {
-        if (isMounted) setLoading(false)
-      }
-    }
-    run()
-    return () => { isMounted = false }
-  }, [username])
-
-  const { topRepos, curatedProjects } = useMemo(() => {
-    const isExcluded = (r) => {
-      const name = (r.name || '').toLowerCase()
-      const full = (r.full_name || '').toLowerCase()
-      if (EXCLUDE_REPO_NAMES.includes(name)) return true
-      if (EXCLUDE_FULLNAMES.includes(full)) return true
-      if (name.includes('finnacle') && (name.includes('backend') || name.includes('back-end') || name.includes('back_end'))) return true
-      return false
-    }
-
-    const allRaw = [...(repos || []), ...(extraRepos || [])]
-    const all = allRaw.filter(r => !r.fork && !isExcluded(r))
-    const byStars = [...all].sort((a, b) => (b.stargazers_count || 0) - (a.stargazers_count || 0))
-
-    const isFinnacle = (r) => ((r.name || '').toLowerCase().includes('finnacle') || (r.name || '').toLowerCase().includes('finacle'))
-    const pinnedByName = all.filter(r => PINNED_REPO_NAMES.some(n => (r.name || '').toLowerCase().includes(n)))
-
-    const microKeyword = (r) => {
-      const name = (r.name || '').toLowerCase()
-      const desc = (r.description || '').toLowerCase()
-      const topics = (r.topics || []).join(' ').toLowerCase()
-      const text = name + ' ' + desc + ' ' + topics
-      return ['microservice', 'microservices', 'spring', 'cloud', 'eureka', 'kafka', 'event'].some(k => text.includes(k))
-    }
-
-    const microRepos = all.filter(microKeyword)
-
-    // Compose only Finnacle (+manual) and microservice repos
-    const ordered = []
-    const seen = new Set()
-
-    // Manual full-name pins first in their provided order
-    for (const fullname of MANUAL_PINNED_FULLNAMES) {
-      const item = all.find(r => (r.full_name || '').toLowerCase() === fullname.toLowerCase())
-      if (item && !seen.has(item.id)) { seen.add(item.id); ordered.push(item) }
-    }
-
-    // Finnacle by name if found
-    for (const r of all) { if (isFinnacle(r) && !seen.has(r.id)) { seen.add(r.id); ordered.push(r) } }
-
-    // Microservice repos next, highest stars first
-    for (const r of [...microRepos].sort((a, b) => (b.stargazers_count || 0) - (a.stargazers_count || 0))) {
-      if (!seen.has(r.id)) { seen.add(r.id); ordered.push(r) }
-    }
-
-    // If no Finnacle repo found, add a manual entry to represent live app
-    if (!ordered.some(r => isFinnacle(r))) {
-      ordered.unshift({
-        id: 'finnacle-live',
-        name: 'Finnacle',
-        description: 'Paper Trading App',
-        html_url: FINNACLE_LIVE_URL,
-        stargazers_count: 0,
-        language: '—',
-      })
-    }
-
-    const curated = ordered
-    const top = byStars.slice(0, 6)
-    return { topRepos: top, curatedProjects: curated }
-  }, [repos, extraRepos])
-
-  return { data, repos: topRepos, projects: curatedProjects, loading, error }
-}
-
+/* ── Hooks ── */
 function useChessRatings(username) {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
 
   useEffect(() => {
-    let isMounted = true
+    let ok = true
     async function run() {
       try {
         setLoading(true)
         const res = await fetch(`https://api.chess.com/pub/player/${username}/stats`)
-        if (!res.ok) throw new Error('Chess.com fetch failed')
+        if (!res.ok) throw new Error('fail')
         const json = await res.json()
-        if (!isMounted) return
-        setData(json)
-      } catch (e) {
-        if (!isMounted) return
-        setError(String(e.message || e))
-      } finally {
-        if (isMounted) setLoading(false)
-      }
+        if (ok) setData(json)
+      } catch { /* silent */ }
+      finally { if (ok) setLoading(false) }
     }
     run()
-    return () => { isMounted = false }
+    return () => { ok = false }
   }, [username])
 
-  return { data, loading, error }
+  return { data, loading }
 }
 
-function StatChip({ label, value }) {
+function useInView() {
+  const ref = useRef(null)
+  const [visible, setVisible] = useState(false)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setVisible(true)
+        observer.unobserve(el)
+      }
+    }, { threshold: 0.1 })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+
+  return [ref, visible]
+}
+
+/* ── Particle Background ── */
+function ParticleCanvas() {
+  const canvasRef = useRef(null)
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    let animId
+    let particles = []
+    let w, h
+
+    function resize() {
+      w = canvas.width = window.innerWidth
+      h = canvas.height = window.innerHeight
+    }
+
+    function createParticles() {
+      particles = []
+      const count = Math.floor((w * h) / 18000)
+      for (let i = 0; i < count; i++) {
+        particles.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          vx: (Math.random() - 0.5) * 0.3,
+          vy: (Math.random() - 0.5) * 0.3,
+          size: Math.random() * 1.5 + 0.5,
+          opacity: Math.random() * 0.4 + 0.1,
+        })
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, w, h)
+
+      // Grid
+      ctx.strokeStyle = 'rgba(0, 240, 255, 0.02)'
+      ctx.lineWidth = 0.5
+      const gridSize = 60
+      for (let x = 0; x < w; x += gridSize) {
+        ctx.beginPath()
+        ctx.moveTo(x, 0)
+        ctx.lineTo(x, h)
+        ctx.stroke()
+      }
+      for (let y = 0; y < h; y += gridSize) {
+        ctx.beginPath()
+        ctx.moveTo(0, y)
+        ctx.lineTo(w, y)
+        ctx.stroke()
+      }
+
+      // Particles
+      for (const p of particles) {
+        p.x += p.vx
+        p.y += p.vy
+        if (p.x < 0) p.x = w
+        if (p.x > w) p.x = 0
+        if (p.y < 0) p.y = h
+        if (p.y > h) p.y = 0
+
+        ctx.beginPath()
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
+        ctx.fillStyle = `rgba(0, 240, 255, ${p.opacity})`
+        ctx.fill()
+      }
+
+      // Connections
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x
+          const dy = particles[i].y - particles[j].y
+          const dist = Math.sqrt(dx * dx + dy * dy)
+          if (dist < 120) {
+            ctx.beginPath()
+            ctx.moveTo(particles[i].x, particles[i].y)
+            ctx.lineTo(particles[j].x, particles[j].y)
+            ctx.strokeStyle = `rgba(0, 240, 255, ${0.06 * (1 - dist / 120)})`
+            ctx.lineWidth = 0.5
+            ctx.stroke()
+          }
+        }
+      }
+
+      animId = requestAnimationFrame(draw)
+    }
+
+    resize()
+    createParticles()
+    draw()
+
+    window.addEventListener('resize', () => { resize(); createParticles() })
+    return () => {
+      cancelAnimationFrame(animId)
+      window.removeEventListener('resize', resize)
+    }
+  }, [])
+
+  return <canvas ref={canvasRef} className="bg-canvas" />
+}
+
+/* ── Fade-In Wrapper ── */
+function FadeIn({ children, delay = 0, className = '' }) {
+  const [ref, visible] = useInView()
   return (
-    <div className="badge">
-      <span style={{ opacity: 0.8 }}>{label}</span>
-      <strong>{value}</strong>
+    <div
+      ref={ref}
+      className={`fade-in ${visible ? 'visible' : ''} ${className}`}
+      style={{ transitionDelay: `${delay}ms` }}
+    >
+      {children}
     </div>
   )
 }
 
+/* ── Main App ── */
 function App() {
-  const { data: gh, projects, loading: ghLoading } = useGithubProfile(GITHUB_USERNAME)
   const { data: chess, loading: chessLoading } = useChessRatings(CHESS_USERNAME)
 
   const chessRatings = useMemo(() => {
     if (!chess) return null
-    const blitz = chess.chess_blitz?.last?.rating
-    const rapid = chess.chess_rapid?.last?.rating
-    const bullet = chess.chess_bullet?.last?.rating
-    return { blitz, rapid, bullet }
+    return {
+      rapid: chess.chess_rapid?.last?.rating,
+      blitz: chess.chess_blitz?.last?.rating,
+      bullet: chess.chess_bullet?.last?.rating,
+    }
   }, [chess])
 
-  const skills = {
-    languages: ['Java', 'JavaScript', 'HTML/CSS', 'SQL'],
-    backend: ['Spring Boot', 'MySQL', 'MongoDB', 'Redis', 'Elasticsearch'],
-    tools: ['Git', 'Kafka', 'Docker'],
-    concepts: ['Microservices', 'REST API', 'JWT Authentication', 'Caching', 'Event-Driven Architecture']
-  }
-
-  const specialties = [
-    { title: 'Microservices', desc: 'Independent, deployable services with clear contracts and resiliency patterns.' },
-    { title: 'Event-Driven Architecture', desc: 'Asynchronous messaging, CQRS, and streaming for responsive systems.' },
-    { title: 'Cloud & Containers', desc: 'Docker, orchestration, and CI/CD with strong observability.' },
+  const projects = [
+    {
+      id: 'critikal',
+      title: 'Critikal',
+      subtitle: 'CritikalAI',
+      desc: 'Autonomous smart contract security agent. Multi-agent pipeline with knowledge graphs, adversarial jury validation, and Foundry PoC generation. Finds what scanners miss — and proves it.',
+      url: CRITIKAL_URL,
+      github: `https://github.com/${GITHUB_USERNAME}/Critikal`,
+      icon: '🛡️',
+      tags: [
+        { label: 'Python', cls: 'lang-python' },
+        { label: 'Solidity', cls: 'lang-solidity' },
+        { label: 'Security', cls: 'security' },
+        { label: 'AI Agents', cls: 'ai' },
+      ],
+      metrics: [
+        { label: 'Stars', value: '13' },
+        { label: 'Contracts', value: '143' },
+        { label: 'Exploits', value: '20' },
+      ],
+      layout: 'featured',
+    },
+    {
+      id: 'critikal-site',
+      title: 'critikalai.com',
+      desc: 'Product site for Critikal — request access, benchmark results, and pipeline visualization.',
+      url: CRITIKAL_URL,
+      icon: '🌐',
+      tags: [
+        { label: 'Product', cls: 'ai' },
+        { label: 'SaaS', cls: 'ai' },
+      ],
+      layout: 'side',
+    },
+    {
+      id: 'rico',
+      title: 'RICO',
+      subtitle: 'AI Pentester',
+      desc: 'Fully unaligned Discord LLM bot with layered memory and tool access. An autonomous AI security testing agent.',
+      github: 'https://github.com/wfsva-alt/RICO',
+      icon: '🤖',
+      tags: [
+        { label: 'Python', cls: 'lang-python' },
+        { label: 'AI', cls: 'ai' },
+        { label: 'Security', cls: 'security' },
+      ],
+      layout: 'side',
+    },
+    {
+      id: 'ai-security-lab',
+      title: 'AI Security Lab',
+      desc: 'Educational lab documenting AI jailbreak attempts, adversarial inputs, and CTFs — aimed at improving model robustness and security awareness.',
+      github: `https://github.com/${GITHUB_USERNAME}/ai-security-lab`,
+      icon: '🔓',
+      tags: [
+        { label: 'AI Security', cls: 'security' },
+        { label: 'Jailbreaks', cls: 'security' },
+        { label: 'Adversarial AI', cls: 'ai' },
+      ],
+      layout: 'wide',
+    },
+    {
+      id: 'jailbreaks',
+      title: 'Jailbreaks Collection',
+      desc: 'Curated collection of jailbreaks and prompt exploits for AI systems. Research resource for the security community.',
+      github: `https://github.com/${GITHUB_SEC_USERNAME}/Jailbreaks`,
+      icon: '💀',
+      tags: [
+        { label: 'Prompt Exploits', cls: 'security' },
+        { label: 'AI Red Team', cls: 'security' },
+      ],
+      metrics: [
+        { label: 'Stars', value: '49' },
+        { label: 'Forks', value: '5' },
+      ],
+      layout: 'wide',
+    },
+    {
+      id: 'finnacle',
+      title: 'Finnacle',
+      desc: 'Free virtual trading platform with equity, derivatives, forex, crypto, and commodities. Full-stack with AI microservice.',
+      url: FINNACLE_LIVE_URL,
+      github: `https://github.com/${GITHUB_USERNAME}/finnacle`,
+      icon: '📈',
+      tags: [
+        { label: 'JavaScript', cls: 'lang-js' },
+        { label: 'Full Stack', cls: 'lang-js' },
+        { label: 'FinTech', cls: 'ai' },
+      ],
+      metrics: [
+        { label: 'Status', value: 'Live' },
+      ],
+      layout: 'featured',
+    },
+    {
+      id: 'system-prompts',
+      title: 'System Prompts',
+      desc: 'Exploring and sharing system prompts for LLMs, Copilot, and beyond. Research into how AI systems are configured.',
+      github: `https://github.com/${GITHUB_SEC_USERNAME}/system_prompts`,
+      icon: '⚙️',
+      tags: [
+        { label: 'LLM Research', cls: 'ai' },
+        { label: 'Prompt Engineering', cls: 'ai' },
+      ],
+      layout: 'side',
+    },
   ]
+
+  const skills = {
+    'AI & ML': ['Python', 'OpenAI API', 'Claude API', 'LangChain', 'RAG', 'Multi-Agent Systems', 'Prompt Engineering'],
+    'Security': ['Smart Contract Auditing', 'AI Red Teaming', 'Jailbreak Research', 'Penetration Testing', 'Slither', 'Foundry'],
+    'Backend': ['Spring Boot', 'Java', 'Express.js', 'Node.js', 'Kafka', 'Redis', 'Elasticsearch'],
+    'Frontend & DB': ['React', 'Next.js', 'TypeScript', 'MySQL', 'MongoDB', 'PostgreSQL'],
+    'DevOps & Tools': ['Git', 'Docker', 'CI/CD', 'AWS', 'Vercel'],
+  }
 
   return (
     <div className="app">
+      <ParticleCanvas />
+      <div className="bg-overlay" />
+      <div className="scanlines" />
+
+      {/* Nav */}
       <nav>
         <div className="container nav-inner">
-          <div className="brand">{FULL_NAME}</div>
-          <div className="cta-row">
-            <a className="btn btn-ghost" href={LINKEDIN_URL} target="_blank" rel="noreferrer">LinkedIn</a>
-            <a className="btn btn-ghost" href={`https://github.com/${GITHUB_USERNAME}`} target="_blank" rel="noreferrer">GitHub</a>
-            <a className="btn btn-ghost" href={`https://www.chess.com/member/${CHESS_USERNAME}`} target="_blank" rel="noreferrer">Chess.com</a>
+          <div className="brand">
+            tuxsharx<span className="cursor-blink">_</span>
+          </div>
+          <div className="nav-links">
+            <a className="nav-link" href="#projects">Work</a>
+            <a className="nav-link" href="#about">About</a>
+            <a className="nav-link" href="#chess">Chess</a>
+            <a className="nav-link primary" href="#contact">Hire Me</a>
           </div>
         </div>
       </nav>
 
-      <header className="hero">
-        <div className="container hero-grid">
-          <div>
-            <div className="badge">Backend Developer</div>
-            <h1 className="title">Building resilient, event‑driven systems.</h1>
-            <p className="subtitle">Microservices • Spring Boot • Kafka • Redis • Elasticsearch</p>
-            <div className="cta-row">
-              <a className="btn btn-primary" href={`mailto:${EMAIL}`}>Contact</a>
-              <a className="btn btn-ghost" href={`tel:${PHONE.replace(/[^+\d]/g, '')}`}>Call {PHONE}</a>
+      {/* Hero */}
+      <section className="hero">
+        <div className="container">
+          <div className="hero-content">
+            <div className="hero-badge">
+              <span className="pulse-dot" />
+              Available for freelance
+            </div>
+
+            <h1 className="hero-title">
+              <span className="line">I build</span>
+              <span className="line">
+                <span className="glitch gradient-text" data-text="intelligent">intelligent</span>
+              </span>
+              <span className="line">systems.</span>
+            </h1>
+
+            <p className="hero-subtitle">
+              <strong>AI Engineer & Security Researcher.</strong> I build chatbots, autonomous agents, and AI-powered products — then break them to make them stronger. Creator of <strong>Critikal</strong>.
+            </p>
+
+            <div className="hero-stats">
+              <div className="stat-item">
+                <span className="stat-value">20+</span>
+                <span className="stat-label">Proven Exploits</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-value">143</span>
+                <span className="stat-label">Contracts Analyzed</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-value">5+</span>
+                <span className="stat-label">AI Agents Built</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-value">49⭐</span>
+                <span className="stat-label">Jailbreaks Repo</span>
+              </div>
+            </div>
+
+            <div className="hero-cta">
+              <a className="btn btn-primary" href="#contact">
+                Let's Work Together →
+              </a>
+              <a className="btn btn-outline-cyan" href={CRITIKAL_URL} target="_blank" rel="noreferrer">
+                View Critikal ↗
+              </a>
+              <a className="btn btn-ghost" href={`https://github.com/${GITHUB_USERNAME}`} target="_blank" rel="noreferrer">
+                GitHub
+              </a>
+              <a className="btn btn-ghost" href={LINKEDIN_URL} target="_blank" rel="noreferrer">
+                LinkedIn
+              </a>
             </div>
           </div>
-          <div>
-            <div className="sections">
-              {/* About Me Section */}
-              <div className="card text-center">
-                <div className="section-title"><span className="kbd">About</span> Me</div>
-                <p className="subtitle" style={{ maxWidth: 900, margin: '0 auto' }}>
-                  I’m a backend developer, chess enthusiast, and finance geek with a love for derivatives. I design scalable systems in Java + Spring Boot where every millisecond counts. Outside of code, I’m always learning — from market strategies to new languages. I speak Hindi, English, and I’m a beginner in Spanish.
+        </div>
+      </section>
+
+      <hr className="section-divider" />
+
+      {/* Projects */}
+      <section id="projects">
+        <div className="container">
+          <FadeIn>
+            <div className="section-header">
+              <div className="section-label">Selected Work</div>
+              <h2 className="section-title">Things I've Built & Broken</h2>
+              <p className="section-desc">AI agents, security tools, and full-stack products. Each one taught me something the hard way.</p>
+            </div>
+          </FadeIn>
+
+          <div className="projects-grid">
+            {projects.map((p, i) => (
+              <FadeIn key={p.id} delay={i * 80}>
+                <a
+                  href={p.url || p.github}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={`project-card ${p.layout}`}
+                >
+                  <div className="card-header">
+                    <div className="card-icon">{p.icon}</div>
+                    <span className="card-arrow">↗</span>
+                  </div>
+                  <h3>{p.title}</h3>
+                  <p>{p.desc}</p>
+                  <div className="card-tags">
+                    {p.tags.map(t => (
+                      <span key={t.label} className={`tag ${t.cls}`}>{t.label}</span>
+                    ))}
+                  </div>
+                  {p.metrics && (
+                    <div className="card-metrics">
+                      {p.metrics.map(m => (
+                        <span key={m.label} className="metric">
+                          {m.label}: <span className="value">{m.value}</span>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </a>
+              </FadeIn>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <hr className="section-divider" />
+
+      {/* About */}
+      <section id="about">
+        <div className="container">
+          <FadeIn>
+            <div className="section-header">
+              <div className="section-label">About</div>
+              <h2 className="section-title">Builder. Breaker. Learner.</h2>
+            </div>
+          </FadeIn>
+
+          <div className="about-grid">
+            <FadeIn delay={100}>
+              <div className="about-text">
+                <p>
+                  I'm Tushar — an <strong>AI engineer and security researcher</strong> based in Delhi. I build intelligent agents, chatbots, and AI-powered products, and I break smart contracts and AI systems to make them safer.
+                </p>
+                <br />
+                <p>
+                  I created <strong>Critikal</strong>, an autonomous smart contract security agent that earned recognition from <strong>Pashov</strong> (one of the top smart contract auditors in the world). My <strong>jailbreaks collection</strong> has 49+ stars and is used as a research resource by the AI security community.
+                </p>
+                <br />
+                <p>
+                  When I'm not building or breaking things, you'll find me playing chess (1820 rapid on Chess.com), reading about derivatives, or learning Spanish. I speak Hindi and English fluently.
                 </p>
               </div>
+            </FadeIn>
 
-              {/* Contact Section */}
-              <div className="card text-center">
-                <div className="section-title"><span className="kbd">Contact</span></div>
-                <div className="cta-row center">
-                  <a className="btn btn-ghost" href={`mailto:${EMAIL}`}>📧 {EMAIL}</a>
-                  <a className="btn btn-ghost" href={`tel:${PHONE.replace(/[^+\d]/g, '')}`}>📞 {PHONE}</a>
-                  <a className="btn btn-ghost" href={LINKEDIN_URL} target="_blank" rel="noreferrer">🔗 LinkedIn</a>
-                  <a className="btn btn-ghost" href={`https://github.com/${GITHUB_USERNAME}`} target="_blank" rel="noreferrer">💻 GitHub</a>
+            <FadeIn delay={200}>
+              <div className="about-highlights">
+                <div className="highlight-card">
+                  <div className="highlight-icon">🤖</div>
+                  <div className="highlight-content">
+                    <h4>AI Agent Development</h4>
+                    <p>Custom chatbots, RAG pipelines, tool-calling agents, and multi-agent orchestration systems.</p>
+                  </div>
+                </div>
+                <div className="highlight-card">
+                  <div className="highlight-icon">🛡️</div>
+                  <div className="highlight-content">
+                    <h4>Security Research</h4>
+                    <p>Smart contract auditing, AI red teaming, prompt injection testing, and adversarial robustness.</p>
+                  </div>
+                </div>
+                <div className="highlight-card">
+                  <div className="highlight-icon">⚡</div>
+                  <div className="highlight-content">
+                    <h4>Full-Stack Products</h4>
+                    <p>End-to-end product development from database design to deployment. Ship fast, ship right.</p>
+                  </div>
                 </div>
               </div>
+            </FadeIn>
+          </div>
+        </div>
+      </section>
 
-              {/* Chess Ratings Section */}
-              <div className="card">
-                <h3>Chess.com Ratings</h3>
-                {chessLoading && <p className="subtitle">Loading chess ratings…</p>}
-                {!chessLoading && !chessRatings && <p className="subtitle">Unable to load ratings.</p>}
-                {!chessLoading && chessRatings && (
-                  <div className="cta-row">
-                    {chessRatings.rapid && <StatChip label="Rapid" value={chessRatings.rapid} />}
-                    {chessRatings.blitz && <StatChip label="Blitz" value={chessRatings.blitz} />}
-                    {chessRatings.bullet && <StatChip label="Bullet" value={chessRatings.bullet} />}
+      <hr className="section-divider" />
+
+      {/* Skills */}
+      <section id="skills">
+        <div className="container">
+          <FadeIn>
+            <div className="section-header">
+              <div className="section-label">Tech Stack</div>
+              <h2 className="section-title">Tools of the Trade</h2>
+            </div>
+          </FadeIn>
+
+          <div className="skills-grid">
+            {Object.entries(skills).map(([category, items], i) => (
+              <FadeIn key={category} delay={i * 80}>
+                <div className="skill-card">
+                  <h4>{category}</h4>
+                  <div className="skill-items">
+                    {items.map(s => (
+                      <span key={s} className="skill-item">{s}</span>
+                    ))}
                   </div>
+                </div>
+              </FadeIn>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <hr className="section-divider" />
+
+      {/* Chess */}
+      <section id="chess" className="chess-section">
+        <div className="container">
+          <FadeIn>
+            <div className="section-header">
+              <div className="section-label">Off the Clock</div>
+              <h2 className="section-title">Chess Ratings</h2>
+              <p className="section-desc">Live from Chess.com. I think chess taught me more about debugging than any course.</p>
+            </div>
+          </FadeIn>
+
+          <div className="chess-grid">
+            {chessLoading ? (
+              <div className="chess-card" style={{ gridColumn: 'span 3' }}>
+                <p style={{ color: 'var(--text-muted)' }}>Loading live ratings...</p>
+              </div>
+            ) : (
+              <>
+                {chessRatings?.rapid && (
+                  <FadeIn delay={0}>
+                    <div className="chess-card">
+                      <span className="chess-icon">🏰</span>
+                      <div className="chess-type">Rapid</div>
+                      <div className="chess-rating">{chessRatings.rapid}</div>
+                    </div>
+                  </FadeIn>
                 )}
-                <p style={{ marginTop: 10 }}>
-                  <a className="btn btn-ghost" href={`https://www.chess.com/member/${CHESS_USERNAME}`} target="_blank" rel="noreferrer">See profile</a>
-                </p>
-              </div>
-
-              <div className="card">
-                <h3>Focus</h3>
-                <div className="card-grid">
-                  {specialties.map(s => (
-                    <div key={s.title} className="card card-4">
-                      <h4 style={{ margin: 0 }}>{s.title}</h4>
-                      <p>{s.desc}</p>
+                {chessRatings?.blitz && (
+                  <FadeIn delay={100}>
+                    <div className="chess-card">
+                      <span className="chess-icon">⚡</span>
+                      <div className="chess-type">Blitz</div>
+                      <div className="chess-rating">{chessRatings.blitz}</div>
                     </div>
-                  ))}
-                </div>
-              </div>
+                  </FadeIn>
+                )}
+                {chessRatings?.bullet && (
+                  <FadeIn delay={200}>
+                    <div className="chess-card">
+                      <span className="chess-icon">🔫</span>
+                      <div className="chess-type">Bullet</div>
+                      <div className="chess-rating">{chessRatings.bullet}</div>
+                    </div>
+                  </FadeIn>
+                )}
+              </>
+            )}
+          </div>
+
+          <FadeIn delay={300}>
+            <div style={{ marginTop: '24px' }}>
+              <a
+                className="btn btn-ghost"
+                href={`https://www.chess.com/member/${CHESS_USERNAME}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                ♟ View Full Profile on Chess.com ↗
+              </a>
             </div>
-          </div>
+          </FadeIn>
         </div>
-      </header>
+      </section>
 
-      <main>
-        <div className="main-content-wrapper">
-          <div className="container sections">
-            
-            {/* The contact and about me sections have been moved up to the header */}
+      <hr className="section-divider" />
 
-            <section className="card text-center">
-              <div className="section-title"><span className="kbd">Skills</span></div>
-              <div className="card-grid">
-                <div className="card card-6">
-                  <h4 style={{ marginTop: 0 }}>Programming Languages</h4>
-                  <div className="cta-row center">{skills.languages.map(s => <span key={s} className="badge">{s}</span>)}</div>
-                </div>
-                <div className="card card-6">
-                  <h4 style={{ marginTop: 0 }}>Backend & Databases</h4>
-                  <div className="cta-row center">{skills.backend.map(s => <span key={s} className="badge">{s}</span>)}</div>
-                </div>
-                <div className="card card-6">
-                  <h4 style={{ marginTop: 0 }}>Tools & Technology</h4>
-                  <div className="cta-row center">{skills.tools.map(s => <span key={s} className="badge">{s}</span>)}</div>
-                </div>
-                <div className="card card-6">
-                  <h4 style={{ marginTop: 0 }}>Concepts</h4>
-                  <div className="cta-row center">{skills.concepts.map(s => <span key={s} className="badge">{s}</span>)}</div>
-                </div>
-              </div>
-            </section>
+      {/* Contact */}
+      <section id="contact" className="contact-section">
+        <div className="container">
+          <FadeIn>
+            <div className="section-label" style={{ justifyContent: 'center' }}>Get in Touch</div>
+            <h2 className="contact-title">
+              Let's build something<br />
+              <span style={{
+                background: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-purple), var(--accent-pink))',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+              }}>
+                incredible.
+              </span>
+            </h2>
+            <p className="contact-desc">
+              Need an AI chatbot? An AI agent? A security audit? Or just want to talk chess? I'm one message away.
+            </p>
+          </FadeIn>
 
-            <section className="card text-center prose">
-              <div className="section-title"><span className="kbd">Experience</span></div>
-              <h4 style={{ margin: '0 0 6px' }}>Junior Software Developer — TravelXP</h4>
-              <p className="subtitle">Jun 2023 – Aug 2023</p>
-              <ul>
-                <li>Developed responsive frontend pages for the Android mobile app using React Native, improving UI consistency and user engagement.</li>
-                <li>Collaborated with backend teams to integrate RESTful APIs for seamless data flow between frontend and microservices.</li>
-              </ul>
-            </section>
-
-            <section className="card">
-              <div className="section-title"><span className="kbd">Projects</span></div>
-              <div className="card-grid">
-                {(projects || []).map(repo => (
-                  <div key={repo.id} className="card card-12">
-                    <a href={repo.html_url} target="_blank" rel="noreferrer">
-                      <h4 style={{ marginTop: 0 }}>{repo.name}</h4>
-                    </a>
-                    <p>{repo.description || 'No description provided.'}</p>
-                    <div className="cta-row" style={{ marginTop: 12 }}>
-                      <span className="badge">★ {repo.stargazers_count}</span>
-                      <span className="badge">{repo.language || '—'}</span>
-                    </div>
-                    {((repo.name || '').toLowerCase().includes('finnacle') || repo.id === 'finnacle-live') && (
-                      <p style={{ marginTop: 10 }}>
-                        <a className="btn btn-primary" href={FINNACLE_LIVE_URL} target="_blank" rel="noreferrer">Go to the live</a>
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            <section className="card">
-              <div className="section-title"><span className="kbd">Education</span></div>
-              <div className="card-grid">
-                <div className="card card-6">
-                  <h4 style={{ marginTop: 0 }}>Scaler Academy — Software Development (2025)</h4>
-                  <p className="subtitle">Modules: DSA, SQL/DBMS, LLD, HLD, Capstone Project (Backend)</p>
-                </div>
-                <div className="card card-6">
-                  <h4 style={{ marginTop: 0 }}>MDU Rohtak — BCA in Computer Science (2023)</h4>
-                </div>
-              </div>
-            </section>
-
-            <section className="card">
-              <div className="section-title"><span className="kbd">Certifications</span></div>
-              <ul>
-                <li>Data Structures & Algorithms (Scaler) | 10/2023 – 04/2024</li>
-                <li>Databases & SQL (Scaler) | 05/2024 – 06/2024</li>
-                <li>Low-Level Design (Scaler) | 06/2024 – 11/2024</li>
-                <li>Backend/Spring Boot (Scaler) | 01/2025 – 03/2025</li>
-                <li>Full Stack Web Development (AttainU) | 05/2022 – 05/2023</li>
-              </ul>
-            </section>
-          </div>
+          <FadeIn delay={150}>
+            <div className="contact-links">
+              <a className="btn btn-primary" href={`mailto:${EMAIL}`}>
+                {EMAIL}
+              </a>
+              <a className="btn btn-outline-cyan" href={`tel:${PHONE.replace(/[^\d+]/g, '')}`}>
+                {PHONE}
+              </a>
+              <a className="btn btn-ghost" href={LINKEDIN_URL} target="_blank" rel="noreferrer">
+                LinkedIn ↗
+              </a>
+              <a className="btn btn-ghost" href={`https://github.com/${GITHUB_USERNAME}`} target="_blank" rel="noreferrer">
+                GitHub ↗
+              </a>
+              <a className="btn btn-ghost" href={`https://x.com/${X_HANDLE.replace('@', '')}`} target="_blank" rel="noreferrer">
+                X (Twitter) ↗
+              </a>
+            </div>
+          </FadeIn>
         </div>
-      </main>
+      </section>
 
+      {/* Footer */}
       <footer className="footer">
         <div className="container">
-          © {new Date().getFullYear()} {FULL_NAME} · Built with React + Vite
+          {'©'} {new Date().getFullYear()} {FULL_NAME} {'·'} Built with React + Vite {'·'}{' '}
+          <a href={`https://github.com/${GITHUB_USERNAME}`} target="_blank" rel="noreferrer">Source</a>
         </div>
       </footer>
     </div>
