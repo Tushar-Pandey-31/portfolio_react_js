@@ -385,6 +385,9 @@ section {
   cursor: pointer;
   display: flex;
   flex-direction: column;
+  min-height: 280px;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .project-card::before {
