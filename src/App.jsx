@@ -403,7 +403,6 @@ function App() {
                   className={`project-card ${p.layout}`}
                 >
                   <div className="card-header">
-                    <div className="card-icon">{p.icon}</div>
                     <span className="card-arrow">↗</span>
                   </div>
                   <h3>{p.title}</h3>
@@ -461,21 +460,21 @@ function App() {
             <FadeIn delay={200}>
               <div className="about-highlights">
                 <div className="highlight-card">
-                  <div className="highlight-icon">🤖</div>
+                  <div className="highlight-icon"></div>
                   <div className="highlight-content">
                     <h4>AI Agent Development</h4>
                     <p>Custom chatbots, RAG pipelines, tool-calling agents, and multi-agent orchestration systems.</p>
                   </div>
                 </div>
                 <div className="highlight-card">
-                  <div className="highlight-icon">🛡️</div>
+                  <div className="highlight-icon"></div>
                   <div className="highlight-content">
                     <h4>Security Research</h4>
                     <p>Smart contract auditing, AI red teaming, prompt injection testing, and adversarial robustness.</p>
                   </div>
                 </div>
                 <div className="highlight-card">
-                  <div className="highlight-icon">⚡</div>
+                  <div className="highlight-icon"></div>
                   <div className="highlight-content">
                     <h4>Full-Stack Products</h4>
                     <p>End-to-end product development from database design to deployment. Ship fast, ship right.</p>
@@ -539,7 +538,6 @@ function App() {
                 {chessRatings?.rapid && (
                   <FadeIn delay={0}>
                     <div className="chess-card">
-                      <span className="chess-icon">🏰</span>
                       <div className="chess-type">Rapid</div>
                       <div className="chess-rating">{chessRatings.rapid}</div>
                     </div>
@@ -548,7 +546,6 @@ function App() {
                 {chessRatings?.blitz && (
                   <FadeIn delay={100}>
                     <div className="chess-card">
-                      <span className="chess-icon">⚡</span>
                       <div className="chess-type">Blitz</div>
                       <div className="chess-rating">{chessRatings.blitz}</div>
                     </div>
@@ -557,7 +554,6 @@ function App() {
                 {chessRatings?.bullet && (
                   <FadeIn delay={200}>
                     <div className="chess-card">
-                      <span className="chess-icon">🔫</span>
                       <div className="chess-type">Bullet</div>
                       <div className="chess-rating">{chessRatings.bullet}</div>
                     </div>

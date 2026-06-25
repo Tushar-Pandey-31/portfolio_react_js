@@ -370,7 +370,7 @@ section {
 /* ── Project Cards — Bento Grid ── */
 .projects-grid {
   display: grid;
-  grid-template-columns: repeat(12, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 16px;
 }
 
@@ -414,40 +414,32 @@ section {
 }
 
 .project-card.featured {
-  grid-column: span 8;
+  grid-column: span 2;
   background: linear-gradient(135deg, rgba(0, 240, 255, 0.03), rgba(168, 85, 247, 0.03));
   border-color: rgba(0, 240, 255, 0.1);
 }
 
 .project-card.side {
-  grid-column: span 4;
+  grid-column: span 1;
 }
 
 .project-card.wide {
-  grid-column: span 6;
+  grid-column: span 1;
 }
 
 .project-card.full {
-  grid-column: span 12;
+  grid-column: span 2;
 }
 
 .project-card .card-header {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: 16px;
+  align-items: center;
+  justify-content: flex-end;
+  margin-bottom: 8px;
 }
 
 .project-card .card-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.3rem;
-  background: rgba(0, 240, 255, 0.08);
-  border: 1px solid rgba(0, 240, 255, 0.12);
+  display: none;
 }
 
 .project-card .card-arrow {
@@ -587,9 +579,7 @@ section {
 }
 
 .chess-card .chess-icon {
-  font-size: 1.8rem;
-  margin-bottom: 12px;
-  display: block;
+  display: none;
 }
 
 /* ── Skills / Tech Stack ── */
@@ -686,16 +676,7 @@ section {
 }
 
 .highlight-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.2rem;
-  flex-shrink: 0;
-  background: rgba(0, 240, 255, 0.06);
-  border: 1px solid rgba(0, 240, 255, 0.1);
+  display: none;
 }
 
 .highlight-content h4 {
@@ -800,13 +781,13 @@ section {
 /* ── Responsive ── */
 @media (max-width: 1024px) {
   .project-card.featured {
-    grid-column: span 12;
+    grid-column: span 2;
   }
   .project-card.side {
-    grid-column: span 6;
+    grid-column: span 1;
   }
   .project-card.wide {
-    grid-column: span 6;
+    grid-column: span 1;
   }
 }
 
