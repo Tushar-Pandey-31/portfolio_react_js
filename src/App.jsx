@@ -223,7 +223,7 @@ function App() {
       id: 'rico',
       title: 'RICO',
       subtitle: 'AI Pentester',
-      desc: 'Fully unaligned Discord LLM bot with layered memory and tool access. An autonomous AI security testing agent.',
+      desc: 'Adversarial Discord agent for LLM guardrail red-teaming — tests prompt injection, jailbreak resistance, and tool misuse in a controlled research environment.',
       github: 'https://github.com/wfsva-alt/RICO',
       icon: '🤖',
       tags: [
@@ -247,9 +247,22 @@ function App() {
       layout: 'wide',
     },
     {
+      id: 'nemo-guardrails-bypass',
+      title: 'NeMo Guardrails Bypass',
+      desc: 'Multi-turn social engineering attack that bypassed NVIDIA NeMo Guardrails (input + output layers) in 3 conversational turns. Full methodology writeup with PoC screenshots.',
+      github: 'https://github.com/tuxsharxsec/Jailbreaks/blob/main/research/nvdia-nemo-guardrails-bypass/writeup.md',
+      icon: '🧠',
+      tags: [
+        { label: 'AI Red Team', cls: 'security' },
+        { label: 'Guardrails', cls: 'security' },
+        { label: 'Research', cls: 'ai' },
+      ],
+      layout: 'wide',
+    },
+    {
       id: 'jailbreaks',
       title: 'Jailbreaks Collection',
-      desc: 'Curated collection of jailbreaks and prompt exploits for AI systems. Research resource for the security community.',
+      desc: 'Curated adversarial prompt research — jailbreaks, guardrail bypasses, and CTF writeups for GPT, Claude, Gemini, Grok, and DeepSeek. Used by the AI security community.',
       github: `https://github.com/${GITHUB_SEC_USERNAME}/Jailbreaks`,
       icon: '💀',
       tags: [
@@ -296,7 +309,7 @@ function App() {
   const skills = {
     'AI & ML': ['Python', 'OpenAI API', 'Claude API', 'LangChain', 'RAG', 'Multi-Agent Systems', 'Prompt Engineering'],
     'Security': ['Smart Contract Auditing', 'AI Red Teaming', 'Jailbreak Research', 'Penetration Testing', 'Slither', 'Foundry'],
-    'Backend': ['Spring Boot', 'Java', 'Express.js', 'Node.js', 'Kafka', 'Redis', 'Elasticsearch'],
+    'Backend': ['Spring Boot', 'Java', 'Express.js', 'Node.js', 'Redis'],
     'Frontend & DB': ['React', 'Next.js', 'TypeScript', 'MySQL', 'MongoDB', 'PostgreSQL'],
     'DevOps & Tools': ['Git', 'Docker', 'CI/CD', 'AWS', 'Vercel'],
   }
@@ -316,7 +329,6 @@ function App() {
           <div className="nav-links">
             <a className="nav-link" href="#projects">Work</a>
             <a className="nav-link" href="#about">About</a>
-            <a className="nav-link" href="#chess">Chess</a>
             <a className="nav-link primary" href="#contact">Hire Me</a>
           </div>
         </div>
@@ -448,7 +460,7 @@ function App() {
                 </p>
                 <br />
                 <p>
-                  I created <strong>Critikal</strong>, an autonomous smart contract security agent that earned recognition from <strong>Pashov</strong> (one of the top smart contract auditors in the world). My <strong>jailbreaks collection</strong> has 49+ stars and is used as a research resource by the AI security community.
+                  I created <strong>Critikal</strong>, an autonomous smart contract security agent that earned recognition from <strong>Pashov</strong> (one of the top smart contract auditors in the world). My <strong>jailbreaks collection</strong> has 49+ stars and is used as a research resource by the AI security community. Most recently, I documented a multi-turn bypass of NVIDIA NeMo Guardrails — extracting a protected secret in 3 conversational turns with zero adversarial surface.
                 </p>
                 <br />
                 <p>
